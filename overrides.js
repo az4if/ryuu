@@ -228,6 +228,87 @@ function applySettings() {
   else { if (state.featured.length) startFeatureAutoplay(); if ((state.topAnime || []).length) startTopAnimeAutoplay(); }
 }
 
+/* Electron-style preferences: a quiet title rail and simple filled setting rows. */
+function renderSettings() {
+  const settings = state.settings;
+  const cards = [
+    ['glow', 'Glow Effect', 'Enable the glow surrounding banners and the hover-triggered glow on anime cards.'],
+    ['showHero', 'Show Hero on Home Page', 'Show Ryuu’s animated introduction on the home page.'],
+    ['hoverCards', 'Modal popup when hovering over anime cards', 'Show the title detail popup on anime-card hover. Disabling it can improve scrolling performance.'],
+    ['reducedMotion', 'Reduce Motion', 'Reduce carousel movement and interface animations.'],
+    ['autoplay', 'Autoplay in web player', 'Request autoplay when your selected video provider supports it.']
+  ];
+  document.getElementById('settings-content').innerHTML = `<div class="electron-settings-title">Settings</div><div class="electron-settings-list">${anilistAccountMarkup()}${cards.map(([key, heading, description]) => `<article class="setting-card"><div><h2>${heading}</h2><p>${description}</p></div><input class="switch" type="checkbox" data-setting="${key}" ${settings[key] ? 'checked' : ''} aria-label="${heading}"></article>`).join('')}<article class="setting-card"><div><h2>Default Audio</h2><p>Choose the language preselected when opening a title.</p></div><select class="setting-choice" data-setting="defaultLanguage"><option value="sub" ${settings.defaultLanguage === 'sub' ? 'selected' : ''}>Japanese · Sub</option><option value="dub" ${settings.defaultLanguage === 'dub' ? 'selected' : ''}>English · Dub</option></select></article><article class="setting-card"><div><h2>Preferred Playback Source</h2><p>Select the provider used first on the watch page.</p></div><select class="setting-choice" data-setting="preferredSource">${Object.entries(PLAYER_SOURCES).map(([key, source]) => `<option value="${key}" ${settings.preferredSource === key ? 'selected' : ''}>${source.label}</option>`).join('')}</select></article></div>`;
+  document.querySelectorAll('[data-setting]').forEach(control => control.addEventListener('change', () => {
+    state.settings[control.dataset.setting] = control.type === 'checkbox' ? control.checked : control.value;
+    saveSettings(); applySettings(); toast('Settings saved.');
+  }));
+}
+
+function closeAniListDropdown() {
+  const menu = document.getElementById('anilist-dropdown');
+  if (menu) menu.hidden = true;
+}
+
+function renderAniListDropdown() {
+  const menu = document.getElementById('anilist-dropdown');
+  const viewer = state.auth.viewer;
+  if (!menu || !viewer) return;
+  menu.innerHTML = `<div class="anilist-dropdown-user">${viewer.avatar?.large ? `<img src="${escapeAttribute(viewer.avatar.large)}" alt="">` : ''}<span>${escapeHTML(viewer.name)}</span></div><div class="anilist-dropdown-divider"></div><button type="button" data-anilist-menu="list">My List</button><button class="is-danger" type="button" data-anilist-menu="logout">Logout</button>`;
+}
+
+function updateAnilistUI() {
+  const button = document.getElementById('anilist-auth');
+  if (!button) return;
+  const viewer = state.auth.viewer;
+  if (viewer) {
+    button.classList.add('is-connected');
+    button.innerHTML = `${viewer.avatar?.large ? `<img src="${escapeAttribute(viewer.avatar.large)}" alt="">` : ''}<span>${escapeHTML(viewer.name)}</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg>`;
+    button.title = 'Open AniList menu';
+    renderAniListDropdown();
+  } else {
+    button.classList.remove('is-connected');
+    button.textContent = 'Login';
+    button.title = 'Login with AniList';
+    closeAniListDropdown();
+  }
+}
+
+async function toggleAnilistAuth() {
+  if (state.auth.token && state.auth.viewer) {
+    const menu = document.getElementById('anilist-dropdown');
+    if (menu) menu.hidden = !menu.hidden;
+    return;
+  }
+  if (!CONFIG.anilist.clientId) { toast('AniList client ID is missing from key.js.', true); return; }
+  const url = new URL(CONFIG.anilist.authorizeUrl);
+  url.searchParams.set('client_id', CONFIG.anilist.clientId);
+  url.searchParams.set('response_type', 'token');
+  location.assign(url.toString());
+}
+
+function logoutAniList() {
+  state.auth = { token: '', viewer: null };
+  localStorage.removeItem('ryuu-anilist-token');
+  closeAniListDropdown(); updateAnilistUI(); renderSettings(); toast('AniList disconnected.');
+}
+
+const baseSetupEvents = window.setupEvents || setupEvents;
+setupEvents = function() {
+  baseSetupEvents();
+  document.addEventListener('click', event => {
+    const action = event.target.closest('[data-anilist-menu]')?.dataset.anilistMenu;
+    if (action === 'logout') { logoutAniList(); return; }
+    if (action === 'list') {
+      closeAniListDropdown();
+      const user = state.auth.viewer?.name;
+      if (user) window.open(`https://anilist.co/user/${encodeURIComponent(user)}/animelist`, '_blank', 'noopener');
+      return;
+    }
+    if (!event.target.closest('.anilist-menu')) closeAniListDropdown();
+  });
+}
+
 function renderFeatured() {
   const container = document.getElementById('featured-carousel');
   const anime = state.featured[state.featureIndex];
@@ -240,7 +321,7 @@ function renderFeatured() {
 }
 
 function sliderControls(prefix, index, total) {
-  return `<button class="slider-arrow slider-arrow-prev" type="button" data-slider-step="-1" aria-label="Previous slide">←</button><span class="slide-position" aria-live="polite">${index + 1} of ${total}</span><button class="slider-arrow slider-arrow-next" type="button" data-slider-step="1" aria-label="Next slide">→</button>`;
+  return `<button class="slider-arrow slider-arrow-prev" type="button" data-slider-step="-1" aria-label="Previous slide"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button><span class="slide-position" aria-live="polite">${index + 1} of ${total}</span><button class="slider-arrow slider-arrow-next" type="button" data-slider-step="1" aria-label="Next slide"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>`;
 }
 
 function bindSliderControls(container, onStep) {
@@ -330,11 +411,10 @@ async function loadMoreTopAnime() {
 
 async function loadHome() {
   const current = currentAniListSeason();
-  const query = `query Home($year: Int) { seasonal: Page(perPage: 8) { media(type: ANIME, sort: POPULARITY_DESC, status: RELEASING, season: ${current.season}, seasonYear: $year, isAdult: false) { ...AnimeCard } } airing: Page(perPage: 12) { media(type: ANIME, sort: POPULARITY_DESC, status: RELEASING, isAdult: false) { ...AnimeCard } } popular: Page(page: 1, perPage: 24) { pageInfo { hasNextPage } media(type: ANIME, sort: POPULARITY_DESC, isAdult: false) { ...AnimeCard } } } fragment AnimeCard on Media { id idMal title { romaji english native } coverImage { extraLarge large medium color } bannerImage description(asHtml: false) episodes format status season seasonYear averageScore popularity genres startDate { year month day } trailer { id site thumbnail } nextAiringEpisode { episode airingAt } }`;
+  const query = `query Home($year: Int) { seasonal: Page(perPage: 8) { media(type: ANIME, sort: POPULARITY_DESC, status: RELEASING, season: ${current.season}, seasonYear: $year, isAdult: false) { ...AnimeCard } } airing: Page(perPage: 40) { media(type: ANIME, sort: POPULARITY_DESC, status: RELEASING, isAdult: false) { ...AnimeCard } } popular: Page(page: 1, perPage: 24) { pageInfo { hasNextPage } media(type: ANIME, sort: POPULARITY_DESC, isAdult: false) { ...AnimeCard } } } fragment AnimeCard on Media { id idMal title { romaji english native } coverImage { extraLarge large medium color } bannerImage description(asHtml: false) episodes format status season seasonYear averageScore popularity genres startDate { year month day } trailer { id site thumbnail } nextAiringEpisode { episode airingAt } }`;
   try {
     const data = await anilist(query, { year: current.year });
-    state.featured = data.seasonal.media.filter(anime => anime.bannerImage).slice(0, 8);
-    if (!state.featured.length) state.featured = data.airing.media.filter(anime => anime.bannerImage).slice(0, 8);
+    state.featured = [...data.seasonal.media, ...data.airing.media.filter(anime => !data.seasonal.media.some(seasonal => seasonal.id === anime.id))].slice(0, 8);
     state.featureIndex = 0;
     state.topAnime = data.popular.media;
     state.topAnimeIndex = 0;
