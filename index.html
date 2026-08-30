@@ -1,98 +1,50 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ryuu 龍 | Premium</title>
-    <meta name="description" content="Ryuu 龍 — Premium anime streaming experience">
-
-    <!-- Standard Favicons -->
-    <link rel="icon" type="image/x-icon" href="./favicons/favicon.ico">
-    <link rel="icon" type="image/png" sizes="16x16" href="./favicons/favicon-16x16.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="./favicons/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="48x48" href="./favicons/favicon-48x48.png">
-    <link rel="icon" type="image/png" sizes="64x64" href="./favicons/favicon-64x64.png">
-    <link rel="icon" type="image/png" sizes="96x96" href="./favicons/favicon-96x96.png">
-
-    <!-- Apple Touch Icons -->
-    <link rel="apple-touch-icon" href="./favicons/apple-touch-icon-180x180.png">
-    <link rel="apple-touch-icon" sizes="57x57" href="./favicons/apple-touch-icon-57x57.png">
-    <link rel="apple-touch-icon" sizes="60x60" href="./favicons/apple-touch-icon-60x60.png">
-    <link rel="apple-touch-icon" sizes="68x68" href="./favicons/apple-touch-icon-68x68.png">
-    <link rel="apple-touch-icon" sizes="72x72" href="./favicons/apple-touch-icon-72x72.png">
-    <link rel="apple-touch-icon" sizes="76x76" href="./favicons/apple-touch-icon-76x76.png">
-    <link rel="apple-touch-icon" sizes="114x114" href="./favicons/apple-touch-icon-114x114.png">
-    <link rel="apple-touch-icon" sizes="120x120" href="./favicons/apple-touch-icon-120x120.png">
-    <link rel="apple-touch-icon" sizes="144x144" href="./favicons/apple-touch-icon-144x144.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="./favicons/apple-touch-icon-152x152.png">
-    <link rel="apple-touch-icon" sizes="167x167" href="./favicons/apple-touch-icon-167x167.png">
-
-    <!-- Android / PWA Icons -->
-    <link rel="icon" type="image/png" sizes="192x192" href="./favicons/android-chrome-192x192.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="./favicons/android-chrome-512x512.png">
-
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="./site.webmanifest">
-    <meta name="theme-color" content="#000000">
-    <meta name="background-color" content="#f5f5f7">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Ryuu">
-    <meta name="application-name" content="Ryuu">
-
-    <!-- Microsoft Tiles -->
-    <meta name="msapplication-TileImage" content="./favicons/mstile-150x150.png">
-    <meta name="msapplication-TileColor" content="#000000">
-    <meta name="msapplication-config" content="./browserconfig.xml">
-
-    <link rel="stylesheet" href="style.css">
-    <script src="app.js" defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#111113">
+  <meta name="description" content="Ryuu — a web-based anime discovery and player experience.">
+  <title>Ryuu 龍</title>
+  <link rel="icon" href="./assets/favicon.png">
+  <link rel="manifest" href="./site.webmanifest">
+  <link rel="stylesheet" href="./style.css">
+  <script src="https://anixo.buzz/embed-sdk.js" defer></script>
+  <script src="./app.js" defer></script>
 </head>
 <body>
-    <header>
-        <div class="brand" id="brand-logo">
-            <img src="./favicons/android-chrome-192x192.png" alt="Ryuu Logo" onerror="this.src='https://via.placeholder.com/38/000/fff?text=龍'">
-            <h1>Ryuu <span>龍</span></h1>
-        </div>
-        <div class="search-box">
-            <input type="text" id="search-input" placeholder="Search anime...">
-        </div>
-        <button class="btn-install" id="btn-install" hidden>Install App</button>
+  <div class="app-shell">
+    <header class="topbar">
+      <button class="brand" type="button" data-route="home" aria-label="Go to Ryuu home">
+        <img src="./assets/logo.svg" alt="Ryuu">
+      </button>
+      <nav class="main-nav" aria-label="Main navigation">
+        <button class="nav-item is-active" type="button" data-route="home">Home</button>
+        <button class="nav-item" type="button" data-route="browse">Browse</button>
+        <button class="nav-item" type="button" data-route="settings">Settings</button>
+      </nav>
+      <div class="header-actions">
+        <label class="search-control" for="global-search"><span aria-hidden="true">⌕</span><input id="global-search" type="search" placeholder="Search anime" autocomplete="off"><kbd>⌘ K</kbd></label>
+        <button id="install-button" class="icon-button install-button" type="button" hidden>Install</button>
+        <button class="icon-button" type="button" title="Settings" aria-label="Settings" data-route="settings">⚙</button>
+      </div>
     </header>
-
     <main>
-        <div class="hero-container" id="hero-carousel">
-            <div id="hero-track"></div>
-            <div class="hero-dots" id="hero-dots"></div>
-        </div>
-
-        <div id="browse-view">
-            <div class="section-header">
-                <h2 class="section-title" id="grid-header-title">Trending Now</h2>
-            </div>
-            <div class="anime-grid" id="anime-grid">
-                <div class="state-msg">Loading premium library...</div>
-            </div>
-        </div>
-
-        <div id="detail-view">
-            <button class="btn-back" id="btn-back">← Back to Browse</button>
-            <div class="detail-card">
-                <img id="detail-img" class="detail-poster" src="" alt="Cover">
-                <div class="detail-body">
-                    <h2 id="detail-title"></h2>
-                    <p id="detail-desc"></p>
-                    <div class="episodes-title">Episodes</div>
-                    <div class="episodes-grid" id="episodes-grid"></div>
-                </div>
-            </div>
-
-            <div class="player-wrapper">
-                <h3 id="player-status-label">Select an episode to begin</h3>
-                <iframe id="video-frame" src="" allowfullscreen></iframe>
-            </div>
-        </div>
+      <section id="home-view" class="view is-active">
+        <section class="landing-hero" id="landing-hero">
+          <div class="hero-words hero-words-top" aria-hidden="true">龍 RYUU 龍 RYUU 龍</div><div class="hero-words hero-words-middle" aria-hidden="true">ANIME ANIME ANIME</div><div class="hero-words hero-words-bottom" aria-hidden="true">七転び八起き 七転び八起き</div>
+          <div class="landing-copy"><img src="./assets/logo.svg" class="landing-logo" alt="Ryuu"><p>Discover, track, and watch your favourite anime in one focused web experience.</p><div class="landing-actions"><button class="button button-primary" type="button" data-route="browse">Browse anime <span>→</span></button><button class="button button-quiet" type="button" id="jump-airing">Top airing</button></div></div>
+          <aside class="activity-panel"><div class="panel-heading"><span class="live-dot"></span> Now airing</div><div id="airing-list" class="airing-list" aria-live="polite"><div class="loading-line">Loading seasonal anime…</div></div></aside>
+        </section>
+        <section class="content-section featured-section"><div class="section-heading"><div><p class="eyebrow">DISCOVER</p><h1>Featured this season</h1></div><div class="carousel-controls"><button id="feature-prev" class="circle-button" type="button" aria-label="Previous feature">←</button><button id="feature-next" class="circle-button" type="button" aria-label="Next feature">→</button></div></div><div id="featured-carousel" class="featured-carousel"><div class="loading-block">Loading featured anime…</div></div></section>
+        <section id="top-airing-section" class="content-section"><div class="section-heading"><div><p class="eyebrow">THIS WEEK</p><h2>Top airing anime</h2></div><button class="text-button" type="button" data-route="browse">View all <span>→</span></button></div><div id="top-airing-grid" class="anime-grid"><div class="loading-block">Loading anime…</div></div></section>
+        <section class="content-section"><div class="section-heading"><div><p class="eyebrow">POPULAR</p><h2>Top anime</h2></div><button class="text-button" type="button" data-route="browse">Explore library <span>→</span></button></div><div id="popular-grid" class="anime-grid"><div class="loading-block">Loading anime…</div></div></section>
+      </section>
+      <section id="browse-view" class="view"><div class="page-header browse-header"><div><p class="eyebrow">LIBRARY</p><h1 id="browse-title">Browse anime</h1><p id="browse-subtitle">Popular titles from AniList.</p></div><div class="browse-tools"><select id="browse-sort" aria-label="Sort anime"><option value="POPULARITY_DESC">Most popular</option><option value="TRENDING_DESC">Trending</option><option value="SCORE_DESC">Highest rated</option><option value="UPDATED_AT_DESC">Recently updated</option></select><button id="browse-search-button" class="button button-primary" type="button">Search</button></div></div><div id="browse-grid" class="anime-grid browse-grid"><div class="loading-block">Loading library…</div></div><div class="load-more-wrap"><button id="load-more" class="button button-quiet" type="button">Load more</button></div></section>
+      <section id="detail-view" class="view"><button class="back-link" type="button" data-route="back">← Back to results</button><div id="detail-content"></div></section>
+      <section id="settings-view" class="view settings-view"><div class="page-header"><div><p class="eyebrow">PREFERENCES</p><h1>Settings</h1><p>Personalize Ryuu’s browsing and web playback experience.</p></div></div><div id="settings-content" class="settings-stack"></div><section class="shortcuts-card"><h2>Keyboard shortcuts</h2><div><span>Focus search</span><kbd>⌘ K</kbd></div><div><span>Return home</span><kbd>Esc</kbd></div><div><span>Previous / next feature</span><kbd>← / →</kbd></div></section></section>
     </main>
+  </div>
+  <div id="toast-region" class="toast-region" aria-live="polite"></div>
 </body>
 </html>
