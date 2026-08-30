@@ -1,0 +1,53 @@
+:root { --header-box-height: 40px; }
+
+/* A shared 40px rhythm gives the Zenshin-style header a single clean baseline. */
+.topbar { height: 68px; grid-template-columns: 225px 1fr minmax(330px, 440px); }
+.brand { width: 205px; height: 66px; overflow: hidden; justify-content: flex-start; }
+.brand img { width: 220px; height: 124px; max-width: none; object-fit: contain; transform: translateX(-8px); }
+.nav-item, .icon-button, .search-control { height: var(--header-box-height); }
+.nav-item { display: inline-grid; place-items: center; }
+.icon-button { display: inline-grid; place-items: center; min-width: var(--header-box-height); padding: 0 10px; }
+.search-control { padding-top: 0; padding-bottom: 0; }
+.github-link { text-decoration: none; }
+.github-link svg { width: 17px; height: 17px; fill: currentColor; }
+.view { min-height: calc(100vh - 68px); }
+
+/* The large source SVG has a 16:9 canvas.  These dimensions intentionally crop its empty
+   top/bottom canvas space while keeping the actual mark large and sharp. */
+.landing-copy { max-width: 660px; }
+.landing-logo { width: min(620px, 90vw); height: 220px; max-width: none; object-fit: contain; }
+
+/* Home hero copy moves and fades on scroll, matching Zenshin's layered type treatment. */
+.landing-hero { --hero-progress: 0; }
+.hero-words { opacity: calc(1 - var(--hero-progress)); transition: opacity .08s linear; }
+.hero-words-top { transform: translateY(calc(var(--hero-progress) * -110px)); }
+.hero-words-middle { transform: translateY(calc(var(--hero-progress) * -35px)); }
+.hero-words-bottom { transform: translateY(calc(var(--hero-progress) * 110px)); }
+.landing-copy { transform: translateY(calc(var(--hero-progress) * -22px)); opacity: calc(1 - (var(--hero-progress) * .45)); }
+.activity-panel { transform: translateY(calc(var(--hero-progress) * 130px)); opacity: calc(1 - (var(--hero-progress) * .42)); }
+.feature-enter { animation: feature-arrive .58s cubic-bezier(.16, 1, .3, 1) both; }
+.feature-enter .feature-info { animation: feature-copy .68s cubic-bezier(.16, 1, .3, 1) .08s both; }
+@keyframes feature-arrive { from { opacity: 0; transform: scale(1.016); } to { opacity: 1; transform: scale(1); } }
+@keyframes feature-copy { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Zenshin-inspired title hover detail card. */
+.anime-hover-card { position: fixed; z-index: 90; width: 310px; overflow: hidden; border: 1px solid #56565e; background: #1a1a1d; box-shadow: 0 24px 58px #000000b8; opacity: 0; pointer-events: none; transform: translateY(8px) scale(.985); transition: opacity .13s ease, transform .13s ease; }
+.anime-hover-card.is-visible { opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); }
+.hover-art { position: relative; height: 140px; overflow: hidden; background: #24242a; }
+.hover-art::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, #1a1a1d 0%, transparent 65%); }
+.hover-art img { width: 100%; height: 100%; object-fit: cover; }
+.hover-art span { position: absolute; z-index: 1; top: 10px; right: 10px; padding: 4px 6px; border: 1px solid #ffffff55; background: #00000094; color: #f2f1f5; font: .59rem var(--mono); }
+.hover-content { padding: 0 12px 12px; }
+.hover-content h3 { margin: -8px 0 3px; position: relative; z-index: 2; max-width: 250px; color: #fff; font: 500 .87rem/1.35 var(--mono); }
+.hover-native { overflow: hidden; margin: 0 0 10px; color: var(--muted); font: .62rem var(--mono); text-overflow: ellipsis; white-space: nowrap; }
+.hover-stats { display: grid; grid-template-columns: repeat(4, 1fr); margin-bottom: 9px; border-top: 1px solid #49494f; border-bottom: 1px solid #49494f; }
+.hover-stats span { overflow: hidden; padding: 6px 4px; border-right: 1px solid #49494f; color: #d7d6da; font: .56rem var(--mono); text-align: center; text-overflow: ellipsis; white-space: nowrap; }
+.hover-stats span:last-child { border: 0; }
+.hover-genres, .hover-airing { margin: 0 0 8px; color: #c5c2e6; font: .59rem/1.45 var(--mono); }
+.hover-description { display: -webkit-box; overflow: hidden; margin: 0 0 10px; color: #c3c2c7; font: .62rem/1.55 var(--mono); -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
+.hover-airing { color: #a89ffc; }
+.hover-open { width: 100%; border: 1px solid #59525d; padding: 8px; background: #28262d; color: #eeeafd; font: .63rem var(--mono); text-align: left; }
+.hover-open:hover { border-color: var(--accent); background: #39334e; }
+
+@media (max-width: 900px) { .topbar { height: 64px; grid-template-columns: 155px 1fr auto; }.brand { width: 145px; height: 62px; }.brand img { width: 170px; height: 96px; transform: translateX(-5px); }.view { min-height: calc(100vh - 64px); } }
+@media (max-width: 620px) { .topbar { grid-template-columns: 145px 1fr; }.brand { width: 135px; }.brand img { width: 160px; height: 90px; }.github-link { display: none; }.landing-logo { height: 170px; width: min(480px, 104vw); }.activity-panel { transform: none; opacity: 1; }.hero-words { opacity: .72; } }
