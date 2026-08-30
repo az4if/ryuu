@@ -169,3 +169,32 @@
 .activity-tile-copy { padding: 9px; }.activity-tile-copy strong { font-size: .62rem; }.activity-tile-copy span,.activity-tile-copy small { font-size: .55rem; }
 
 @media (max-width: 760px) { .detail-layout,.watch-area,.relations-section { width: min(100% - 32px, 1180px); }.detail-layout { grid-template-columns: 135px minmax(0, 1fr); gap: 16px; margin-top: -42px; }.detail-poster { width: 135px; height: 195px; }.detail-body { min-height: 195px; padding-top: 46px; }.detail-romaji { font-size: .9rem; }.detail-body h1 { font-size: .62rem; }.description { grid-column: 1 / -1; margin-left: -151px; max-height: 132px; }.external-links { grid-column: 1 / -1; margin-left: -151px; }.detail-hero .detail-banner { height: 225px; min-height: 225px; }.watch-area { margin-top: 26px; }.watch-controls { flex-wrap: wrap; }.player-placeholder { min-height: 200px; }.relations-grid { grid-template-columns: 1fr; } }
+
+/* Dedicated title and watch episode lists: metadata comes from the AniZip-compatible mapper,
+   while every missing field has a predictable visual fallback. */
+.episode-list-section, .watch-page { width: min(1180px, calc(100% - 64px)); margin: 34px auto 72px; border-top: 1px solid #45454d; padding-top: 22px; }
+.watch-page { margin-top: 12px; }
+.episode-list-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
+.episode-list-header h2 { margin: 0; color: #e6e4eb; font: 500 1rem var(--mono); }
+.episode-list-header p { margin: 4px 0 0; color: #8d8b94; font: .6rem/1.45 var(--mono); }
+.episode-list-header .button { flex: 0 0 auto; }
+.episode-list-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; border-top: 1px solid #3e3e45; border-bottom: 1px solid #3e3e45; padding: 9px 0; }
+.episode-list-toolbar p { margin: 0; color: #9c9aa3; font: .6rem var(--mono); }
+.episode-list-toolbar .episode-filter { flex: 0 1 230px; }
+.episode-list { display: grid; grid-template-columns: 1fr; gap: 7px; margin-top: 13px; }
+.episode-row { display: grid; grid-template-columns: 154px minmax(0, 1fr) auto; min-height: 86px; overflow: hidden; border: 1px solid #424249; padding: 0; background: #1a1a1e; color: #d9d7df; text-align: left; transition: border-color .16s ease, background .16s ease, transform .16s ease; }
+button.episode-row { cursor: pointer; }
+button.episode-row:hover, .episode-row.is-active { border-color: #867bd4; background: #24222d; }
+button.episode-row:hover { transform: translateX(2px); }
+.episode-row-image { width: 154px; height: 86px; object-fit: cover; background: #24242a; opacity: .84; }
+.episode-row-copy { min-width: 0; padding: 11px 14px; }
+.episode-row-title { display: flex; align-items: center; gap: 8px; color: #eceaf1; font: 500 .7rem/1.4 var(--mono); }
+.episode-row-number { color: #ada6f0; white-space: nowrap; }
+.episode-row-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.episode-row-overview { display: -webkit-box; overflow: hidden; margin: 5px 0 0; color: #9e9ca5; font: .59rem/1.45 var(--mono); -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.episode-row-date { align-self: center; margin-right: 14px; color: #8e8b96; font: .57rem var(--mono); white-space: nowrap; }
+.episode-row.is-fallback .episode-row-name { color: #b6b4bd; }
+.watch-page .player-card { display: block; margin: 0 0 24px; border-color: #55555e; }
+.watch-page .player-frame { width: 100%; aspect-ratio: 16 / 9; }
+.watch-page .watch-header { margin-bottom: 12px; }
+@media (max-width: 760px) { .episode-list-section, .watch-page { width: min(100% - 32px, 1180px); }.episode-list-toolbar { align-items: stretch; flex-direction: column; }.episode-list-toolbar .episode-filter { width: 100%; max-width: none; }.episode-row { grid-template-columns: 112px minmax(0, 1fr); min-height: 76px; }.episode-row-image { width: 112px; height: 76px; }.episode-row-copy { padding: 8px 10px; }.episode-row-date { display: none; }.episode-list-header { align-items: flex-start; }.episode-list-header .button { padding: 8px; } }
