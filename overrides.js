@@ -219,6 +219,15 @@ async function loadHome() {
   }
 }
 
+function applySettings() {
+  document.documentElement.classList.toggle('reduced-motion', state.settings.reducedMotion);
+  document.body.classList.toggle('no-glow', !state.settings.glow);
+  document.getElementById('landing-hero')?.toggleAttribute('hidden', !state.settings.showHero);
+  if (!state.settings.hoverCards) hideHoverCard();
+  if (state.settings.reducedMotion) { stopFeatureAutoplay(); stopTopAnimeAutoplay(); }
+  else { if (state.featured.length) startFeatureAutoplay(); if ((state.topAnime || []).length) startTopAnimeAutoplay(); }
+}
+
 function renderFeatured() {
   const container = document.getElementById('featured-carousel');
   const anime = state.featured[state.featureIndex];
@@ -228,4 +237,118 @@ function renderFeatured() {
   const english = anime.title.english || anime.title.native || '';
   const stats = `<div class="anime-stats"><span>${anime.episodes || '?'} EPS</span>${anime.averageScore ? `<span>★ ${anime.averageScore}</span>` : ''}<span>${Number(anime.popularity || 0).toLocaleString()} USERS</span><span>${escapeHTML((anime.format || 'ANIME').slice(0, 3))}</span></div>`;
   container.innerHTML = `<div class="feature-shell"><img class="feature-glow" src="${escapeAttribute(backdrop)}" alt=""><article class="feature feature-enter" data-anime-id="${anime.id}" role="button" tabindex="0"><img class="feature-backdrop" src="${escapeAttribute(backdrop)}" alt=""><div class="feature-info"><h2>${escapeHTML(romaji)}</h2><p class="feature-native">${escapeHTML(english)}</p><p class="feature-desc">${escapeHTML(trimText(anime.description, 360) || 'No synopsis available.')}</p>${stats}</div></article></div>`;
+}
+
+function sliderControls(prefix, index, total) {
+  return `<button class="slider-arrow slider-arrow-prev" type="button" data-slider-step="-1" aria-label="Previous slide">←</button><span class="slide-position" aria-live="polite">${index + 1} of ${total}</span><button class="slider-arrow slider-arrow-next" type="button" data-slider-step="1" aria-label="Next slide">→</button>`;
+}
+
+function bindSliderControls(container, onStep) {
+  container.querySelectorAll('[data-slider-step]').forEach(button => button.addEventListener('click', event => {
+    event.preventDefault();
+    event.stopPropagation();
+    onStep(Number(button.dataset.sliderStep));
+  }));
+}
+
+function sliderContent(anime) {
+  const backdrop = anime.bannerImage || coverOf(anime);
+  const romaji = anime.title.romaji || titleOf(anime);
+  const english = anime.title.english || anime.title.native || '';
+  const stats = `<div class="anime-stats"><span>${anime.episodes || '?'} EPS</span>${anime.averageScore ? `<span>★ ${anime.averageScore}</span>` : ''}<span>${Number(anime.popularity || 0).toLocaleString()} USERS</span><span>${escapeHTML((anime.format || 'ANIME').slice(0, 3))}</span></div>`;
+  return `<img class="feature-glow" src="${escapeAttribute(backdrop)}" alt=""><article class="feature feature-enter" data-anime-id="${anime.id}" role="button" tabindex="0"><img class="feature-backdrop" src="${escapeAttribute(backdrop)}" alt=""><div class="feature-info"><h2>${escapeHTML(romaji)}</h2><p class="feature-native">${escapeHTML(english)}</p><p class="feature-desc">${escapeHTML(trimText(anime.description, 360) || 'No synopsis available.')}</p>${stats}</div></article>`;
+}
+
+function renderFeatured() {
+  const container = document.getElementById('featured-carousel');
+  const anime = state.featured[state.featureIndex];
+  if (!anime) { container.innerHTML = '<div class="empty-state">No seasonal anime found.</div>'; return; }
+  container.innerHTML = `<div class="feature-shell">${sliderContent(anime)}${sliderControls('featured', state.featureIndex, state.featured.length)}</div>`;
+  bindSliderControls(container, cycleFeature);
+}
+
+function cycleTopAnime(direction) {
+  const list = state.topAnime || [];
+  if (!list.length) return;
+  state.topAnimeIndex = ((state.topAnimeIndex || 0) + direction + Math.min(list.length, 8)) % Math.min(list.length, 8);
+  renderTopAnimeCarousel();
+}
+
+function stopTopAnimeAutoplay() {
+  if (state.topAnimeTimer) { clearInterval(state.topAnimeTimer); state.topAnimeTimer = null; }
+}
+
+function startTopAnimeAutoplay() {
+  stopTopAnimeAutoplay();
+  if (!state.settings.reducedMotion && (state.topAnime || []).length > 1) state.topAnimeTimer = setInterval(() => cycleTopAnime(1), 5200);
+}
+
+function renderTopAnimeCarousel() {
+  const container = document.getElementById('top-anime-carousel');
+  const slides = (state.topAnime || []).slice(0, 8);
+  if (!slides.length) { container.innerHTML = '<div class="empty-state">No top anime found.</div>'; return; }
+  state.topAnimeIndex = Math.min(state.topAnimeIndex || 0, slides.length - 1);
+  container.innerHTML = `<div class="feature-shell">${sliderContent(slides[state.topAnimeIndex])}${sliderControls('top-anime', state.topAnimeIndex, slides.length)}</div>`;
+  bindSliderControls(container, cycleTopAnime);
+}
+
+function renderTopAnime() {
+  renderTopAnimeCarousel();
+  renderAnimeGrid('popular-grid', state.topAnime || []);
+  const loader = document.getElementById('top-anime-load-sentinel');
+  loader.hidden = !state.topAnimeLoading;
+}
+
+function setupTopAnimeLazyLoad() {
+  state.topAnimeObserver?.disconnect();
+  const sentinel = document.getElementById('top-anime-load-sentinel');
+  if (!sentinel || !('IntersectionObserver' in window)) return;
+  state.topAnimeObserver = new IntersectionObserver(entries => {
+    if (entries.some(entry => entry.isIntersecting)) loadMoreTopAnime();
+  }, { rootMargin: '480px 0px' });
+  state.topAnimeObserver.observe(sentinel);
+}
+
+async function loadMoreTopAnime() {
+  if (state.topAnimeLoading || !state.topAnimeHasNext) return;
+  state.topAnimeLoading = true;
+  document.getElementById('top-anime-load-sentinel').hidden = false;
+  const query = `query TopAnime($page: Int) { Page(page: $page, perPage: 24) { pageInfo { hasNextPage } media(type: ANIME, sort: POPULARITY_DESC, isAdult: false) { id idMal title { romaji english native } coverImage { extraLarge large medium color } bannerImage description(asHtml: false) episodes format status season seasonYear averageScore popularity genres startDate { year month day } trailer { id site thumbnail } nextAiringEpisode { episode airingAt } } } }`;
+  try {
+    const data = await anilist(query, { page: state.topAnimePage });
+    state.topAnime.push(...data.Page.media);
+    state.topAnimePage += 1;
+    state.topAnimeHasNext = data.Page.pageInfo.hasNextPage;
+    renderTopAnime();
+  } catch (error) {
+    toast(`Could not load more top anime: ${error.message}`, true);
+  } finally {
+    state.topAnimeLoading = false;
+    document.getElementById('top-anime-load-sentinel').hidden = true;
+  }
+}
+
+async function loadHome() {
+  const current = currentAniListSeason();
+  const query = `query Home($year: Int) { seasonal: Page(perPage: 8) { media(type: ANIME, sort: POPULARITY_DESC, status: RELEASING, season: ${current.season}, seasonYear: $year, isAdult: false) { ...AnimeCard } } airing: Page(perPage: 12) { media(type: ANIME, sort: POPULARITY_DESC, status: RELEASING, isAdult: false) { ...AnimeCard } } popular: Page(page: 1, perPage: 24) { pageInfo { hasNextPage } media(type: ANIME, sort: POPULARITY_DESC, isAdult: false) { ...AnimeCard } } } fragment AnimeCard on Media { id idMal title { romaji english native } coverImage { extraLarge large medium color } bannerImage description(asHtml: false) episodes format status season seasonYear averageScore popularity genres startDate { year month day } trailer { id site thumbnail } nextAiringEpisode { episode airingAt } }`;
+  try {
+    const data = await anilist(query, { year: current.year });
+    state.featured = data.seasonal.media.filter(anime => anime.bannerImage).slice(0, 8);
+    if (!state.featured.length) state.featured = data.airing.media.filter(anime => anime.bannerImage).slice(0, 8);
+    state.featureIndex = 0;
+    state.topAnime = data.popular.media;
+    state.topAnimeIndex = 0;
+    state.topAnimePage = 2;
+    state.topAnimeHasNext = data.popular.pageInfo.hasNextPage;
+    state.topAnimeLoading = false;
+    renderFeatured();
+    renderAnimeGrid('top-airing-grid', data.airing.media);
+    renderTopAnime();
+    renderAiring(data.airing.media.slice(0, 5));
+    setupTopAnimeLazyLoad();
+    startFeatureAutoplay();
+    startTopAnimeAutoplay();
+  } catch (error) {
+    showNetworkError(['featured-carousel', 'top-airing-grid', 'popular-grid', 'airing-list'], error);
+  }
 }
