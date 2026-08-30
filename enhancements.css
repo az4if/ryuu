@@ -74,6 +74,34 @@
 @keyframes lane-down { from { transform: translateY(-530px); } to { transform: translateY(0); } }
 .reduced-motion .activity-lane { animation-play-state: paused; }
 
+/* Zenshin glow: the blur is a second instance of the title's own artwork, never a flat colour. */
+.feature-shell { position: relative; isolation: isolate; padding: 14px 10px 20px; overflow: visible; }
+.feature-glow { position: absolute; z-index: -1; inset: 20px 28px 2px; width: calc(100% - 56px); height: calc(100% - 16px); object-fit: cover; opacity: .64; filter: blur(34px) brightness(.68) saturate(1.65); transform: scale(1.025); transition: opacity .28s ease; }
+.feature-shell .feature { position: relative; }
+.anime-card-art { position: relative; isolation: isolate; padding: 0 2px 8px; }
+.card-glow { position: absolute; z-index: -1; inset: 12px 8px 0; width: calc(100% - 16px); height: calc(100% - 8px); object-fit: cover; opacity: 0; filter: blur(20px) brightness(.72) saturate(1.8); transition: opacity .32s ease, transform .32s ease; transform: scale(.9); }
+.anime-card:hover .card-glow, .anime-card:focus-within .card-glow { opacity: .72; transform: scale(1.04); }
+.detail-hero { position: relative; isolation: isolate; padding: 18px 24px 30px; overflow: hidden; }
+.detail-banner-glow { position: absolute; z-index: -1; inset: 36px 7% 10px; width: 86%; height: 94%; object-fit: cover; opacity: .7; filter: blur(42px) brightness(.64) saturate(1.6); transform: scale(1.04); }
+.detail-hero .detail-banner { position: relative; }
+.no-glow .feature-glow, .no-glow .card-glow, .no-glow .detail-banner-glow { opacity: 0 !important; }
+.no-glow .anime-card:hover .anime-poster { box-shadow: 0 12px 26px #00000055; }
+.detail-fact { margin: 0 0 10px; color: #b9b7c0; font: .65rem/1.5 var(--mono); text-transform: capitalize; }
+.detail-fact b { display: inline-block; min-width: 58px; color: #e1dff0; font-weight: 500; }
+.episode-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.episode-button { min-height: 50px; display: flex; align-items: center; gap: 9px; padding: 6px 8px; text-align: left; }
+.episode-button b { display: grid; flex: 0 0 27px; width: 27px; height: 27px; place-items: center; border: 1px solid #53535b; color: #c7c5cc; font: 500 .61rem var(--mono); }
+.episode-button span { display: -webkit-box; overflow: hidden; color: inherit; font: .59rem/1.35 var(--mono); -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.episode-button.is-active b { border-color: #fff8; }
+.relations-section { margin: 42px 0 0; border-top: 1px solid var(--line); padding-top: 25px; }
+.relations-heading { margin-bottom: 14px; }.relations-heading .eyebrow { margin-bottom: 5px; }.relations-heading h2 { font: 500 1rem var(--mono); letter-spacing: 0; }
+.relations-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; }
+.relation-card { display: flex; min-width: 0; border: 1px solid #414149; background: #1c1c20; cursor: pointer; transition: border-color .18s ease, background .18s ease; }
+.relation-card:hover { border-color: #8e84e5; background: #25232d; }.relation-card img { width: 53px; height: 73px; object-fit: cover; }
+.relation-card > div { min-width: 0; padding: 8px; }.relation-card span, .relation-card small { display: block; color: #a79fea; font: .55rem var(--mono); text-transform: capitalize; }
+.relation-card strong { display: -webkit-box; overflow: hidden; margin: 5px 0; color: #e4e3e8; font: 500 .62rem/1.35 var(--mono); -webkit-box-orient: vertical; -webkit-line-clamp: 2; }.relation-card small { color: #8d8c94; }
+
 @media (max-width: 1050px) { .landing-hero { gap: 24px; }.activity-panel { width: 410px; transform: translateY(calc(var(--hero-progress) * 95px)); }.activity-lane-right { left: 210px; }.activity-tile { width: 188px; height: 163px; } }
 @media (max-width: 900px) { .landing-logo { width: min(630px, 105vw); height: 230px; transform: scale(1.14); }.activity-panel { width: 420px; height: 420px; } }
 @media (max-width: 700px) { .landing-logo { height: 195px; transform: scale(1.1); }.activity-panel { width: min(430px, 92vw); height: 285px; margin: 18px 0 0; }.activity-lane-left { left: 20px; top: -435px; }.activity-lane-right { left: 205px; top: -500px; }.activity-tile { width: 165px; height: 142px; margin: 13px 0; } }
+@media (max-width: 620px) { .detail-hero { padding: 12px 0 24px; }.detail-banner-glow { inset: 22px 8% 5px; }.episode-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
