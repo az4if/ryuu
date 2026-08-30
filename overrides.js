@@ -75,7 +75,7 @@ async function episodeEntries(anime) {
 async function openAnime(id) {
   state.returnRoute = state.route === 'detail' || state.route === 'watch' ? state.returnRoute : state.route;
   showRoute('detail');
-  document.getElementById('detail-content').innerHTML = '<div class="loading-block">Loading anime details…</div>';
+  document.getElementById('detail-content').innerHTML = detailSkeletonMarkup();
   const query = `query Detail($id: Int) { Media(id: $id, type: ANIME) { id idMal title { romaji english native userPreferred } coverImage { extraLarge large medium color } bannerImage description(asHtml: false) episodes duration format status season seasonYear averageScore popularity genres source countryOfOrigin synonyms startDate { year month day } endDate { year month day } trailer { id site thumbnail } nextAiringEpisode { episode airingAt } airingSchedule(notYetAired: false, perPage: 50) { nodes { episode airingAt } } streamingEpisodes { title thumbnail url site } mediaListEntry { id status progress score(format: POINT_10) } studios(isMain: true) { nodes { name } } relations { edges { relationType(version: 2) node { id type format status episodes seasonYear title { userPreferred } coverImage { medium } } } } } }`;
   try {
     state.currentAnime = (await anilist(query, { id })).Media;
@@ -200,6 +200,22 @@ function currentAniListSeason() {
   if (month <= 8) return { season: 'SUMMER', year: now.getFullYear() };
   if (month <= 11) return { season: 'FALL', year: now.getFullYear() };
   return { season: 'WINTER', year: now.getFullYear() + 1 };
+}
+
+function gridSkeletonMarkup(count = 12) {
+  return Array.from({ length: count }, () => '<article class="anime-skeleton" aria-hidden="true"><span class="skeleton-poster"></span><span class="skeleton-line skeleton-line-title"></span><span class="skeleton-line skeleton-line-meta"></span></article>').join('');
+}
+
+function sliderSkeletonMarkup() {
+  return '<div class="feature-skeleton" aria-hidden="true"><span class="feature-skeleton-copy"><i></i><i></i><i></i><i></i></span></div>';
+}
+
+function activitySkeletonMarkup() {
+  return '<div class="activity-skeleton" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>';
+}
+
+function detailSkeletonMarkup() {
+  return '<div class="detail-skeleton" aria-hidden="true"><span class="detail-skeleton-banner"></span><div class="detail-skeleton-layout"><span class="detail-skeleton-poster"></span><span class="detail-skeleton-copy"><i></i><i></i><i></i><i></i><i></i></span></div><span class="detail-skeleton-episodes"><i></i><i></i><i></i></span></div>';
 }
 
 async function loadHome() {
@@ -394,6 +410,7 @@ async function loadMoreTopAnime() {
   if (state.topAnimeLoading || !state.topAnimeHasNext) return;
   state.topAnimeLoading = true;
   document.getElementById('top-anime-load-sentinel').hidden = false;
+  document.getElementById('popular-grid').insertAdjacentHTML('beforeend', gridSkeletonMarkup(24));
   const query = `query TopAnime($page: Int) { Page(page: $page, perPage: 24) { pageInfo { hasNextPage } media(type: ANIME, sort: POPULARITY_DESC, isAdult: false) { id idMal title { romaji english native } coverImage { extraLarge large medium color } bannerImage description(asHtml: false) episodes format status season seasonYear averageScore popularity genres startDate { year month day } trailer { id site thumbnail } nextAiringEpisode { episode airingAt } } } }`;
   try {
     const data = await anilist(query, { page: state.topAnimePage });
@@ -411,6 +428,11 @@ async function loadMoreTopAnime() {
 
 async function loadHome() {
   const current = currentAniListSeason();
+  document.getElementById('featured-carousel').innerHTML = sliderSkeletonMarkup();
+  document.getElementById('top-airing-grid').innerHTML = gridSkeletonMarkup(50);
+  document.getElementById('top-anime-carousel').innerHTML = sliderSkeletonMarkup();
+  document.getElementById('popular-grid').innerHTML = gridSkeletonMarkup(24);
+  document.getElementById('airing-list').innerHTML = activitySkeletonMarkup();
   const query = `query Home($year: Int) { seasonal: Page(perPage: 8) { media(type: ANIME, sort: POPULARITY_DESC, status: RELEASING, season: ${current.season}, seasonYear: $year, isAdult: false) { ...AnimeCard } } airing: Page(perPage: 50) { media(type: ANIME, sort: POPULARITY_DESC, status: RELEASING, isAdult: false) { ...AnimeCard } } popular: Page(page: 1, perPage: 24) { pageInfo { hasNextPage } media(type: ANIME, sort: POPULARITY_DESC, isAdult: false) { ...AnimeCard } } } fragment AnimeCard on Media { id idMal title { romaji english native } coverImage { extraLarge large medium color } bannerImage description(asHtml: false) episodes format status season seasonYear averageScore popularity genres startDate { year month day } trailer { id site thumbnail } nextAiringEpisode { episode airingAt } }`;
   try {
     const data = await anilist(query, { year: current.year });
@@ -430,5 +452,22 @@ async function loadHome() {
     startTopAnimeAutoplay();
   } catch (error) {
     showNetworkError(['featured-carousel', 'top-airing-grid', 'popular-grid', 'airing-list'], error);
+  }
+}
+
+async function loadBrowse(reset = true) {
+  if (reset) { state.browsePage = 1; state.browse = []; }
+  const sort = document.getElementById('browse-sort').value;
+  const grid = document.getElementById('browse-grid');
+  if (reset) grid.innerHTML = gridSkeletonMarkup(24);
+  const query = `query Browse($page: Int, $search: String, $sort: [MediaSort]) { Page(page: $page, perPage: 24) { pageInfo { hasNextPage } media(type: ANIME, search: $search, sort: $sort, isAdult: false) { id idMal title { romaji english native } coverImage { extraLarge large medium color } bannerImage description(asHtml: false) episodes format status season seasonYear averageScore popularity genres startDate { year month day } trailer { id site thumbnail } nextAiringEpisode { episode airingAt } } } }`;
+  try {
+    const data = await anilist(query, { page: state.browsePage, search: state.browseQuery || null, sort: [sort] });
+    state.browse.push(...data.Page.media);
+    state.browsePage += 1;
+    renderAnimeGrid('browse-grid', state.browse);
+    document.getElementById('load-more').hidden = !data.Page.pageInfo.hasNextPage;
+  } catch (error) {
+    grid.innerHTML = `<div class="empty-state">Could not load the library. ${escapeHTML(error.message)}</div>`;
   }
 }
