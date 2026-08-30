@@ -249,7 +249,7 @@ function applySettings() {
   document.documentElement.classList.toggle('reduced-motion', state.settings.reducedMotion);
   document.body.classList.toggle('no-glow', !state.settings.glow);
   document.body.classList.toggle('hide-site-banner', Boolean(state.settings.hideSiteBanner));
-  document.getElementById('landing-hero')?.toggleAttribute('hidden', !state.settings.showHero);
+  document.getElementById('landing-hero')?.toggleAttribute('hidden', !state.settings.showHero || Boolean(state.settings.hideSiteBanner));
   if (state.airing) renderAiring(state.airing);
   if (!state.settings.hoverCards) hideHoverCard();
   if (state.settings.reducedMotion) { stopFeatureAutoplay(); stopTopAnimeAutoplay(); }
@@ -261,7 +261,7 @@ function renderSettings() {
   const settings = state.settings;
   const cards = [
     ['glow', 'Glow Effect', 'Enable the glow surrounding banners and the hover-triggered glow on anime cards.'],
-    ['hideSiteBanner', 'Hide Site Banner', 'Hide the animated anime artwork/banner column on the right side of the home page.'],
+    ['hideSiteBanner', 'Hide Site Banner', 'Hide the entire intro banner at the top of the home page, including the Ryuu logo and the artwork column.'],
     ['hoverCards', 'Modal popup when hovering over anime cards', 'Show the title detail popup on anime-card hover. Disabling it can improve scrolling performance.'],
     ['reducedMotion', 'Reduce Motion', 'Reduce carousel movement and interface animations.'],
     ['autoplay', 'Autoplay in web player', 'Request autoplay when your selected video provider supports it.']
