@@ -105,3 +105,23 @@
 @media (max-width: 900px) { .landing-logo { width: min(630px, 105vw); height: 230px; transform: scale(1.14); }.activity-panel { width: 420px; height: 420px; } }
 @media (max-width: 700px) { .landing-logo { height: 195px; transform: scale(1.1); }.activity-panel { width: min(430px, 92vw); height: 285px; margin: 18px 0 0; }.activity-lane-left { left: 20px; top: -435px; }.activity-lane-right { left: 205px; top: -500px; }.activity-tile { width: 165px; height: 142px; margin: 13px 0; } }
 @media (max-width: 620px) { .detail-hero { padding: 12px 0 24px; }.detail-banner-glow { inset: 22px 8% 5px; }.episode-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* Match Zenshin's actual home composition: a centred 2/5 brand column and two
+   30rem-high portrait activity columns that move in opposite directions on scroll. */
+@media (min-width: 1051px) {
+  .landing-hero { display: flex; justify-content: center; align-items: center; gap: 96px; padding: 0 48px; }
+  .landing-copy { flex: 0 0 40%; display: flex; flex-direction: column; align-items: center; }
+  .landing-logo { width: 760px; max-width: 128%; height: 260px; transform: scale(1.46); transform-origin: center; }
+  .activity-panel { flex: 0 0 480px; width: 480px; height: 480px; margin: 0; }
+}
+.activity-panel { mask-image: linear-gradient(to bottom, transparent 0%, #000 9%, #000 91%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 9%, #000 91%, transparent 100%); }
+.activity-panel { transform: none; opacity: 1; }
+.activity-lane { width: 224px; animation: none; }
+.activity-lane-left { left: 0; top: -256px; transform: translateY(calc(var(--hero-progress) * -360px)); }
+.activity-lane-right { left: 240px; top: -400px; transform: translateY(calc(var(--hero-progress) * 360px)); }
+.activity-tile { width: 224px; height: 288px; margin: 24px 0; transform: matrix(1, 0, -.05, 1, 0, 0); }
+.activity-tile:hover { transform: matrix(1, 0, -.05, 1, 0, 0) scale(1.04); }
+.activity-tile-copy { padding: 10px 11px; }.activity-tile-copy strong { font-size: .68rem; }.activity-tile-copy span,.activity-tile-copy small { font-size: .59rem; }
+
+@media (max-width: 1050px) { .activity-panel { width: 480px; height: 480px; }.activity-lane-left { left: 0; }.activity-lane-right { left: 240px; }.activity-tile { width: 224px; height: 288px; } }
+@media (max-width: 700px) { .landing-logo { transform: scale(1.17); }.activity-panel { width: min(430px, 92vw); height: 285px; }.activity-lane-left { left: 0; top: -366px; }.activity-lane-right { left: 205px; top: -446px; }.activity-tile { width: 190px; height: 244px; margin: 18px 0; } }
