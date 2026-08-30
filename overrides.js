@@ -386,9 +386,18 @@ async function loadBrowse(reset = true) {
   const sort = document.getElementById('browse-sort').value;
   const grid = document.getElementById('browse-grid');
   if (reset) grid.innerHTML = gridSkeletonMarkup(24);
-  const query = `query Browse($page: Int, $search: String, $sort: [MediaSort], $genre: String, $year: Int, $format: MediaFormat, $status: MediaStatus) { Page(page: $page, perPage: 24) { pageInfo { hasNextPage } media(type: ANIME, search: $search, sort: $sort, genre: $genre, seasonYear: $year, format: $format, status: $status, isAdult: false) { id idMal title { romaji english native } coverImage { extraLarge large medium color } bannerImage description(asHtml: false) episodes format status season seasonYear averageScore popularity genres startDate { year month day } trailer { id site thumbnail } nextAiringEpisode { episode airingAt } } } }`;
+  const query = `query Browse($page: Int, $search: String, $sort: [MediaSort], $genre: [String], $year: Int, $format: [MediaFormat], $status: [MediaStatus]) { Page(page: $page, perPage: 24) { pageInfo { hasNextPage } media(type: ANIME, search: $search, sort: $sort, genre_in: $genre, seasonYear: $year, format_in: $format, status_in: $status, isAdult: false) { id idMal title { romaji english native } coverImage { extraLarge large medium color } bannerImage description(asHtml: false) episodes format status season seasonYear averageScore popularity genres startDate { year month day } trailer { id site thumbnail } nextAiringEpisode { episode airingAt } } } }`;
+  const variables = {
+    page: state.browsePage,
+    search: state.browseQuery || null,
+    sort: [sort],
+    genre: filters.genre ? [filters.genre] : null,
+    year: filters.year,
+    format: filters.format ? [filters.format] : null,
+    status: filters.status ? [filters.status] : null
+  };
   try {
-    const data = await anilist(query, { page: state.browsePage, search: state.browseQuery || null, sort: [sort], ...filters });
+    const data = await anilist(query, variables);
     state.browse.push(...data.Page.media);
     state.browsePage += 1;
     renderAnimeGrid('browse-grid', state.browse);
