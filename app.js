@@ -14,6 +14,8 @@ document.addEventListener('DOMContentLoaded', initApp);
 function initApp() {
     setupEventListeners();
     fetchTrendingData();
+    registerServiceWorker();
+    setupInstallPrompt();
 }
 
 function setupEventListeners() {
@@ -22,6 +24,42 @@ function setupEventListeners() {
     });
     document.getElementById('brand-logo').addEventListener('click', resetToHome);
     document.getElementById('btn-back').addEventListener('click', closeDetail);
+}
+
+// ---- PWA: service worker registration ----
+function registerServiceWorker() {
+    if (!('serviceWorker' in navigator)) return;
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+            .catch((err) => console.warn('Service worker registration failed:', err));
+    });
+}
+
+// ---- PWA: "Install App" button ----
+function setupInstallPrompt() {
+    const installBtn = document.getElementById('btn-install');
+    if (!installBtn) return;
+
+    let deferredPrompt = null;
+
+    window.addEventListener('beforeinstallprompt', (event) => {
+        event.preventDefault();
+        deferredPrompt = event;
+        installBtn.hidden = false;
+    });
+
+    installBtn.addEventListener('click', async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        await deferredPrompt.userChoice;
+        deferredPrompt = null;
+        installBtn.hidden = true;
+    });
+
+    window.addEventListener('appinstalled', () => {
+        installBtn.hidden = true;
+        deferredPrompt = null;
+    });
 }
 
 async function fetchTrendingData() {

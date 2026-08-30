@@ -78,6 +78,24 @@ header {
     width: 400px;
 }
 
+.btn-install {
+    font-family: var(--font-stack);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #ffffff;
+    background: var(--accent-black);
+    border: none;
+    border-radius: var(--radius-pill);
+    padding: 10px 20px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.btn-install:hover { opacity: 0.85; }
+.btn-install:active { transform: scale(0.96); }
+.btn-install[hidden] { display: none; }
+
 .search-box input {
     border: none;
     background: transparent;
