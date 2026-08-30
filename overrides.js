@@ -324,6 +324,7 @@ function logoutAniList() {
 const baseSetupEvents = window.setupEvents || setupEvents;
 setupEvents = function() {
   baseSetupEvents();
+  setupBrowseControls();
   document.addEventListener('click', event => {
     const action = event.target.closest('[data-anilist-menu]')?.dataset.anilistMenu;
     if (action === 'logout') { logoutAniList(); return; }
@@ -335,6 +336,66 @@ setupEvents = function() {
     }
     if (!event.target.closest('.anilist-menu')) closeAniListDropdown();
   });
+}
+
+function setupBrowseControls() {
+  const year = document.getElementById('browse-year');
+  if (year && year.options.length === 1) {
+    for (let value = new Date().getFullYear() + 1; value >= 1940; value -= 1) year.insertAdjacentHTML('beforeend', `<option value="${value}">${value}</option>`);
+  }
+  document.getElementById('browse-query')?.addEventListener('keydown', event => { if (event.key === 'Enter') searchFromInput(); });
+  ['browse-genre', 'browse-year', 'browse-format', 'browse-status'].forEach(id => document.getElementById(id)?.addEventListener('change', () => loadBrowse(true)));
+  loadBrowseGenres();
+}
+
+async function loadBrowseGenres() {
+  const select = document.getElementById('browse-genre');
+  if (!select || select.dataset.loaded) return;
+  try {
+    const data = await anilist('query { GenreCollection }', {});
+    select.insertAdjacentHTML('beforeend', data.GenreCollection.map(genre => `<option value="${escapeAttribute(genre)}">${escapeHTML(genre)}</option>`).join(''));
+    select.dataset.loaded = 'true';
+  } catch { /* The all-genres default continues to work if AniList is unavailable. */ }
+}
+
+function browseFilterValues() {
+  return {
+    genre: document.getElementById('browse-genre')?.value || null,
+    year: Number(document.getElementById('browse-year')?.value) || null,
+    format: document.getElementById('browse-format')?.value || null,
+    status: document.getElementById('browse-status')?.value || null
+  };
+}
+
+function searchFromInput() {
+  const browseInput = document.getElementById('browse-query');
+  const globalInput = document.getElementById('global-search');
+  const source = state.route === 'browse' ? browseInput : globalInput;
+  state.browseQuery = source?.value.trim() || '';
+  if (browseInput) browseInput.value = state.browseQuery;
+  if (globalInput) globalInput.value = state.browseQuery;
+  document.getElementById('browse-title').textContent = state.browseQuery ? `Results for “${state.browseQuery}”` : 'Browse anime';
+  document.getElementById('browse-subtitle').textContent = state.browseQuery ? 'AniList results matching your search and filters.' : 'Explore AniList’s anime library with focused filters.';
+  showRoute('browse');
+  loadBrowse(true);
+}
+
+async function loadBrowse(reset = true) {
+  if (reset) { state.browsePage = 1; state.browse = []; }
+  const filters = browseFilterValues();
+  const sort = document.getElementById('browse-sort').value;
+  const grid = document.getElementById('browse-grid');
+  if (reset) grid.innerHTML = gridSkeletonMarkup(24);
+  const query = `query Browse($page: Int, $search: String, $sort: [MediaSort], $genre: String, $year: Int, $format: MediaFormat, $status: MediaStatus) { Page(page: $page, perPage: 24) { pageInfo { hasNextPage } media(type: ANIME, search: $search, sort: $sort, genre: $genre, seasonYear: $year, format: $format, status: $status, isAdult: false) { id idMal title { romaji english native } coverImage { extraLarge large medium color } bannerImage description(asHtml: false) episodes format status season seasonYear averageScore popularity genres startDate { year month day } trailer { id site thumbnail } nextAiringEpisode { episode airingAt } } } }`;
+  try {
+    const data = await anilist(query, { page: state.browsePage, search: state.browseQuery || null, sort: [sort], ...filters });
+    state.browse.push(...data.Page.media);
+    state.browsePage += 1;
+    renderAnimeGrid('browse-grid', state.browse);
+    document.getElementById('load-more').hidden = !data.Page.pageInfo.hasNextPage;
+  } catch (error) {
+    grid.innerHTML = `<div class="empty-state">Could not load the library. ${escapeHTML(error.message)}</div>`;
+  }
 }
 
 function renderFeatured() {
@@ -467,7 +528,7 @@ async function loadHome() {
   }
 }
 
-async function loadBrowse(reset = true) {
+async function legacyLoadBrowse(reset = true) {
   if (reset) { state.browsePage = 1; state.browse = []; }
   const sort = document.getElementById('browse-sort').value;
   const grid = document.getElementById('browse-grid');
