@@ -202,13 +202,14 @@ button.episode-row:hover { transform: translateX(2px); }
 
 /* Reference-style automatic home slider: image-led, quiet, and intentionally button-free. */
 .featured-section { padding-top: 36px; }
+.featured-section { width: 100%; max-width: none; margin-right: 0; margin-left: 0; }
 .featured-section > .section-heading { display: none; }
 .featured-carousel { min-height: 288px; }
 .featured-carousel .feature-shell { padding: 0; }
 .featured-carousel .feature-glow { inset: 18px 5%; width: 90%; height: calc(100% - 18px); opacity: .48; filter: blur(32px) brightness(.6) saturate(1.45); }
 .featured-carousel .feature { height: 288px; border: 0; background: #141416; }
 .featured-carousel .feature::after { background: linear-gradient(90deg, #141416 0%, #141416ed 29%, #141416a8 53%, #14141612 78%), linear-gradient(0deg, #14141655, transparent 56%); }
-.featured-carousel .feature-info { max-width: 530px; padding: 34px 46px; }
+.featured-carousel .feature-info { max-width: 530px; padding: 34px max(32px, calc((100vw - 1440px) / 2 + 32px)); }
 .featured-carousel .feature-info h2 { overflow: hidden; margin: 0; color: #fff; font-size: clamp(1.35rem, 2.2vw, 2.05rem); letter-spacing: .015em; text-overflow: ellipsis; white-space: nowrap; }
 .featured-carousel .feature-native { margin: 4px 0 15px; color: #dad8de; font-size: .66rem; }
 .featured-carousel .feature-desc { display: -webkit-box; width: min(330px, 100%); overflow: hidden; margin-bottom: 14px; color: #d3d1d6; font: .64rem/1.58 var(--sans); -webkit-box-orient: vertical; -webkit-line-clamp: 5; }
