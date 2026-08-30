@@ -27,8 +27,9 @@
 .hero-words-top { transform: translateY(calc(var(--hero-progress) * -110px)); }
 .hero-words-middle { transform: translateY(calc(var(--hero-progress) * -35px)); }
 .hero-words-bottom { transform: translateY(calc(var(--hero-progress) * 110px)); }
-.landing-copy { transform: translateY(calc(var(--hero-progress) * -22px)); opacity: calc(1 - (var(--hero-progress) * .45)); }
-.activity-panel { transform: translateY(calc(var(--hero-progress) * 130px)); opacity: calc(1 - (var(--hero-progress) * .42)); }
+.landing-copy { transform: translateY(calc(var(--hero-progress) * -22px)); opacity: calc(1 - var(--hero-progress)); }
+.activity-panel { transform: translateY(calc(var(--hero-progress) * 130px)); opacity: calc(1 - var(--hero-progress)); }
+.hero-collapsed .landing-copy, .hero-collapsed .activity-panel { pointer-events: none; visibility: hidden; }
 .feature-enter { animation: feature-arrive .58s cubic-bezier(.16, 1, .3, 1) both; }
 .feature-enter .feature-info { animation: feature-copy .68s cubic-bezier(.16, 1, .3, 1) .08s both; }
 @keyframes feature-arrive { from { opacity: 0; transform: scale(1.016); } to { opacity: 1; transform: scale(1); } }
