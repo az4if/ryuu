@@ -12,6 +12,7 @@
 .github-link svg { width: 17px; height: 17px; fill: currentColor; }
 .anilist-auth { height: var(--header-box-height); display: inline-flex; align-items: center; gap: 7px; max-width: 150px; overflow: hidden; border: 1px solid #45454d; padding: 0 10px; background: #29292d; color: #d7d5dc; font: 500 .66rem var(--mono); text-overflow: ellipsis; white-space: nowrap; }
 .anilist-auth:hover { border-color: #8b7cff; color: #fff; }.anilist-auth.is-connected { border-color: #6259a7; background: #242236; }.anilist-auth img { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; }
+.site-footer { margin-top: 72px; border-top: 1px solid #303036; background: #101012; }.footer-inner { width: min(1440px, calc(100% - 64px)); min-height: 72px; display: flex; align-items: center; gap: 22px; margin: 0 auto; color: #818089; font: .62rem var(--mono); }.footer-brand { display: flex; align-items: center; gap: 10px; color: #b6b4bd; }.footer-brand img { width: 58px; height: 42px; object-fit: contain; }.footer-inner > p { margin: 0; flex: 1; }.footer-github { display: inline-flex; align-items: center; gap: 7px; color: #b7b5be; text-decoration: none; transition: color .18s ease; }.footer-github:hover { color: #fff; }.footer-github svg { width: 15px; height: 15px; fill: currentColor; }
 .view { min-height: calc(100vh - 68px); }
 
 /* The large source SVG has a 16:9 canvas.  These dimensions intentionally crop its empty
@@ -111,6 +112,7 @@
 @media (max-width: 700px) { .landing-logo { height: 195px; transform: scale(1.1); }.activity-panel { width: min(430px, 92vw); height: 285px; margin: 18px 0 0; }.activity-lane-left { left: 20px; top: -435px; }.activity-lane-right { left: 205px; top: -500px; }.activity-tile { width: 165px; height: 142px; margin: 13px 0; } }
 @media (max-width: 620px) { .detail-hero { padding: 12px 0 24px; }.detail-banner-glow { inset: 22px 8% 5px; }.episode-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 620px) { .anilist-auth { width: var(--header-box-height); min-width: var(--header-box-height); padding: 0; justify-content: center; font-size: 0; }.anilist-auth::before { content: 'A'; font: 500 .75rem var(--mono); }.anilist-auth img { display: none; } }
+@media (max-width: 620px) { .site-footer { margin-top: 48px; }.footer-inner { width: min(100% - 32px, 1440px); min-height: 88px; gap: 12px; }.footer-brand span { display: none; }.footer-inner > p { font-size: .56rem; }.footer-brand img { width: 54px; } }
 
 /* Match Zenshin's actual home composition: a centred 2/5 brand column and two
    30rem-high portrait activity columns that move in opposite directions on scroll. */
