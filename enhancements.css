@@ -197,4 +197,22 @@ button.episode-row:hover { transform: translateX(2px); }
 .watch-page .player-card { display: block; margin: 0 0 24px; border-color: #55555e; }
 .watch-page .player-frame { width: 100%; aspect-ratio: 16 / 9; }
 .watch-page .watch-header { margin-bottom: 12px; }
+.episode-row.is-watched .episode-row-number::before { content: ''; display: inline-block; width: 6px; height: 6px; margin: 0 6px 1px 0; border-radius: 50%; background: #79d995; box-shadow: 0 0 8px #79d99588; }
 @media (max-width: 760px) { .episode-list-section, .watch-page { width: min(100% - 32px, 1180px); }.episode-list-toolbar { align-items: stretch; flex-direction: column; }.episode-list-toolbar .episode-filter { width: 100%; max-width: none; }.episode-row { grid-template-columns: 112px minmax(0, 1fr); min-height: 76px; }.episode-row-image { width: 112px; height: 76px; }.episode-row-copy { padding: 8px 10px; }.episode-row-date { display: none; }.episode-list-header { align-items: flex-start; }.episode-list-header .button { padding: 8px; } }
+
+/* Reference-style automatic home slider: image-led, quiet, and intentionally button-free. */
+.featured-section { padding-top: 36px; }
+.featured-section > .section-heading { display: none; }
+.featured-carousel { min-height: 288px; }
+.featured-carousel .feature-shell { padding: 0; }
+.featured-carousel .feature-glow { inset: 18px 5%; width: 90%; height: calc(100% - 18px); opacity: .48; filter: blur(32px) brightness(.6) saturate(1.45); }
+.featured-carousel .feature { height: 288px; border: 0; background: #141416; }
+.featured-carousel .feature::after { background: linear-gradient(90deg, #141416 0%, #141416ed 29%, #141416a8 53%, #14141612 78%), linear-gradient(0deg, #14141655, transparent 56%); }
+.featured-carousel .feature-info { max-width: 530px; padding: 34px 46px; }
+.featured-carousel .feature-info h2 { overflow: hidden; margin: 0; color: #fff; font-size: clamp(1.35rem, 2.2vw, 2.05rem); letter-spacing: .015em; text-overflow: ellipsis; white-space: nowrap; }
+.featured-carousel .feature-native { margin: 4px 0 15px; color: #dad8de; font-size: .66rem; }
+.featured-carousel .feature-desc { display: -webkit-box; width: min(330px, 100%); overflow: hidden; margin-bottom: 14px; color: #d3d1d6; font: .64rem/1.58 var(--sans); -webkit-box-orient: vertical; -webkit-line-clamp: 5; }
+.featured-carousel .feature-info .button { display: none; }
+.featured-carousel .anime-stats { margin-bottom: 0; border-color: #ffffff70; background: #00000052; backdrop-filter: blur(2px); }
+.featured-carousel .anime-stats span { font-size: .58rem; }
+@media (max-width: 620px) { .featured-section { padding-top: 20px; }.featured-carousel, .featured-carousel .feature { min-height: 330px; height: 330px; }.featured-carousel .feature-info { padding: 32px 24px; }.featured-carousel .feature::after { background: linear-gradient(90deg, #141416f8 0%, #141416c4 64%, #14141642 100%); } }

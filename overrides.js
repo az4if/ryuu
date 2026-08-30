@@ -30,15 +30,17 @@ async function fetchMappedEpisodes(anime) {
 }
 
 function releasedEpisodeLimit(anime, mapped) {
-  const mapperNumbers = Object.values(mapped?.episodes || {}).map(episode => Number(episode?.episode)).filter(Number.isFinite);
-  const streamingNumbers = (anime.streamingEpisodes || []).map((episode, index) => Number((episode.title || '').match(/\d+(?:\.\d+)?/)?.[0]) || index + 1);
-  const known = Math.max(0, ...mapperNumbers, ...streamingNumbers);
+  const now = Math.floor(Date.now() / 1000);
+  const airedByAniList = (anime.airingSchedule?.nodes || []).filter(episode => Number(episode.airingAt) <= now).map(episode => Number(episode.episode)).filter(Number.isFinite);
+  const releasedStreaming = (anime.streamingEpisodes || []).map((episode, index) => ({ number: Number((episode.title || '').match(/\d+(?:\.\d+)?/)?.[0]) || index + 1, date: episode.airingAt || 0 })).filter(episode => !episode.date || Number(episode.date) <= now).map(episode => episode.number);
+  const releasedMapped = Object.values(mapped?.episodes || {}).filter(episode => !episode.airdate || Date.parse(episode.airdate) <= Date.now()).map(episode => Number(episode?.episode)).filter(Number.isFinite);
+  const knownReleased = Math.max(0, ...airedByAniList, ...releasedStreaming, ...releasedMapped);
   const nextEpisode = Number(anime.nextAiringEpisode?.episode);
   if (anime.status === 'RELEASING') {
     if (Number.isFinite(nextEpisode) && nextEpisode > 0) return Math.max(0, Math.floor(nextEpisode) - 1);
-    return known;
+    return knownReleased;
   }
-  return Math.max(Number(anime.episodes) || 0, known);
+  return Math.max(Number(anime.episodes) || 0, knownReleased);
 }
 
 async function episodeEntries(anime) {
@@ -71,7 +73,7 @@ async function openAnime(id) {
   state.returnRoute = state.route === 'detail' || state.route === 'watch' ? state.returnRoute : state.route;
   showRoute('detail');
   document.getElementById('detail-content').innerHTML = '<div class="loading-block">Loading anime details…</div>';
-  const query = `query Detail($id: Int) { Media(id: $id, type: ANIME) { id idMal title { romaji english native userPreferred } coverImage { extraLarge large medium color } bannerImage description(asHtml: false) episodes duration format status season seasonYear averageScore popularity genres source countryOfOrigin synonyms startDate { year month day } endDate { year month day } trailer { id site thumbnail } nextAiringEpisode { episode airingAt } streamingEpisodes { title thumbnail url site } mediaListEntry { id status progress score(format: POINT_10) } studios(isMain: true) { nodes { name } } relations { edges { relationType(version: 2) node { id type format status episodes seasonYear title { userPreferred } coverImage { medium } } } } } }`;
+  const query = `query Detail($id: Int) { Media(id: $id, type: ANIME) { id idMal title { romaji english native userPreferred } coverImage { extraLarge large medium color } bannerImage description(asHtml: false) episodes duration format status season seasonYear averageScore popularity genres source countryOfOrigin synonyms startDate { year month day } endDate { year month day } trailer { id site thumbnail } nextAiringEpisode { episode airingAt } airingSchedule(notYetAired: false, perPage: 50) { nodes { episode airingAt } } streamingEpisodes { title thumbnail url site } mediaListEntry { id status progress score(format: POINT_10) } studios(isMain: true) { nodes { name } } relations { edges { relationType(version: 2) node { id type format status episodes seasonYear title { userPreferred } coverImage { medium } } } } } }`;
   try {
     state.currentAnime = (await anilist(query, { id })).Media;
     state.currentEpisode = 1;
@@ -186,4 +188,41 @@ function showRoute(route) {
   state.route = route;
   if (route === 'browse' && !state.browse.length) loadBrowse(true);
   window.scrollTo({ top: 0, behavior: state.settings.reducedMotion ? 'auto' : 'smooth' });
+}
+
+function currentAniListSeason() {
+  const now = new Date(), month = now.getMonth() + 1;
+  if (month <= 2) return { season: 'WINTER', year: now.getFullYear() };
+  if (month <= 5) return { season: 'SPRING', year: now.getFullYear() };
+  if (month <= 8) return { season: 'SUMMER', year: now.getFullYear() };
+  if (month <= 11) return { season: 'FALL', year: now.getFullYear() };
+  return { season: 'WINTER', year: now.getFullYear() + 1 };
+}
+
+async function loadHome() {
+  const current = currentAniListSeason();
+  const query = `query Home($year: Int) { seasonal: Page(perPage: 8) { media(type: ANIME, sort: POPULARITY_DESC, status: RELEASING, season: ${current.season}, seasonYear: $year, isAdult: false) { ...AnimeCard } } airing: Page(perPage: 12) { media(type: ANIME, sort: POPULARITY_DESC, status: RELEASING, isAdult: false) { ...AnimeCard } } popular: Page(perPage: 12) { media(type: ANIME, sort: POPULARITY_DESC, isAdult: false) { ...AnimeCard } } } fragment AnimeCard on Media { id idMal title { romaji english native } coverImage { extraLarge large medium color } bannerImage description(asHtml: false) episodes format status season seasonYear averageScore popularity genres startDate { year month day } trailer { id site thumbnail } nextAiringEpisode { episode airingAt } }`;
+  try {
+    const data = await anilist(query, { year: current.year });
+    state.featured = data.seasonal.media.filter(anime => anime.bannerImage).slice(0, 5);
+    if (!state.featured.length) state.featured = data.airing.media.filter(anime => anime.bannerImage).slice(0, 5);
+    renderFeatured();
+    renderAnimeGrid('top-airing-grid', data.airing.media);
+    renderAnimeGrid('popular-grid', data.popular.media);
+    renderAiring(data.airing.media.slice(0, 5));
+    startFeatureAutoplay();
+  } catch (error) {
+    showNetworkError(['featured-carousel', 'top-airing-grid', 'popular-grid', 'airing-list'], error);
+  }
+}
+
+function renderFeatured() {
+  const container = document.getElementById('featured-carousel');
+  const anime = state.featured[state.featureIndex];
+  if (!anime) { container.innerHTML = '<div class="empty-state">No seasonal anime found.</div>'; return; }
+  const backdrop = anime.bannerImage || coverOf(anime);
+  const romaji = anime.title.romaji || titleOf(anime);
+  const english = anime.title.english || anime.title.native || '';
+  const stats = `<div class="anime-stats"><span>${anime.episodes || '?'} EPS</span>${anime.averageScore ? `<span>★ ${anime.averageScore}</span>` : ''}<span>${Number(anime.popularity || 0).toLocaleString()} USERS</span><span>${escapeHTML((anime.format || 'ANIME').slice(0, 3))}</span></div>`;
+  container.innerHTML = `<div class="feature-shell"><img class="feature-glow" src="${escapeAttribute(backdrop)}" alt=""><article class="feature feature-enter" data-anime-id="${anime.id}" role="button" tabindex="0"><img class="feature-backdrop" src="${escapeAttribute(backdrop)}" alt=""><div class="feature-info"><h2>${escapeHTML(romaji)}</h2><p class="feature-native">${escapeHTML(english)}</p><p class="feature-desc">${escapeHTML(trimText(anime.description, 360) || 'No synopsis available.')}</p>${stats}</div></article></div>`;
 }
