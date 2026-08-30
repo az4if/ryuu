@@ -10,6 +10,8 @@
 .search-control { padding-top: 0; padding-bottom: 0; }
 .github-link { text-decoration: none; }
 .github-link svg { width: 17px; height: 17px; fill: currentColor; }
+.anilist-auth { height: var(--header-box-height); display: inline-flex; align-items: center; gap: 7px; max-width: 150px; overflow: hidden; border: 1px solid #45454d; padding: 0 10px; background: #29292d; color: #d7d5dc; font: 500 .66rem var(--mono); text-overflow: ellipsis; white-space: nowrap; }
+.anilist-auth:hover { border-color: #8b7cff; color: #fff; }.anilist-auth.is-connected { border-color: #6259a7; background: #242236; }.anilist-auth img { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; }
 .view { min-height: calc(100vh - 68px); }
 
 /* The large source SVG has a 16:9 canvas.  These dimensions intentionally crop its empty
@@ -88,6 +90,9 @@
 .no-glow .anime-card:hover .anime-poster { box-shadow: 0 12px 26px #00000055; }
 .detail-fact { margin: 0 0 10px; color: #b9b7c0; font: .65rem/1.5 var(--mono); text-transform: capitalize; }
 .detail-fact b { display: inline-block; min-width: 58px; color: #e1dff0; font-weight: 500; }
+.anilist-progress { display: flex; width: fit-content; gap: 14px; margin: 0 0 13px; border: 1px solid #615aa3; padding: 6px 8px; color: #c4c0ef; font: .63rem var(--mono); }.anilist-progress strong { color: #fff; font-weight: 500; }
+.mark-watched { margin-left: auto; border: 1px solid #756cd1; padding: 5px 7px; background: #332e5a; color: #eeeafd; font: .59rem var(--mono); }.mark-watched:hover { background: #49417f; }.mark-watched:disabled { opacity: .65; cursor: wait; }
+.anilist-user { display: flex; align-items: center; gap: 11px; }.anilist-user img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; }
 .episode-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
 .episode-button { min-height: 50px; display: flex; align-items: center; gap: 9px; padding: 6px 8px; text-align: left; }
 .episode-button b { display: grid; flex: 0 0 27px; width: 27px; height: 27px; place-items: center; border: 1px solid #53535b; color: #c7c5cc; font: 500 .61rem var(--mono); }
@@ -105,6 +110,7 @@
 @media (max-width: 900px) { .landing-logo { width: min(630px, 105vw); height: 230px; transform: scale(1.14); }.activity-panel { width: 420px; height: 420px; } }
 @media (max-width: 700px) { .landing-logo { height: 195px; transform: scale(1.1); }.activity-panel { width: min(430px, 92vw); height: 285px; margin: 18px 0 0; }.activity-lane-left { left: 20px; top: -435px; }.activity-lane-right { left: 205px; top: -500px; }.activity-tile { width: 165px; height: 142px; margin: 13px 0; } }
 @media (max-width: 620px) { .detail-hero { padding: 12px 0 24px; }.detail-banner-glow { inset: 22px 8% 5px; }.episode-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 620px) { .anilist-auth { width: var(--header-box-height); min-width: var(--header-box-height); padding: 0; justify-content: center; font-size: 0; }.anilist-auth::before { content: 'A'; font: 500 .75rem var(--mono); }.anilist-auth img { display: none; } }
 
 /* Match Zenshin's actual home composition: a centred 2/5 brand column and two
    30rem-high portrait activity columns that move in opposite directions on scroll. */

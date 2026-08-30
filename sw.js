@@ -1,6 +1,6 @@
 // Ryuu service worker — app-shell caching for installable, offline-tolerant PWA.
 // Bump CACHE_VERSION whenever a shell file changes so clients pick up the update.
-const CACHE_VERSION = 'ryuu-v6';
+const CACHE_VERSION = 'ryuu-v8';
 const CACHE_NAME = `ryuu-cache-${CACHE_VERSION}`;
 
 // Everything needed to paint the app shell while offline.
@@ -12,6 +12,7 @@ const APP_SHELL = [
     './style.css',
     './enhancements.css',
     './app.js',
+    './key.js',
     './site.webmanifest',
     './favicons/favicon-16x16.png',
     './favicons/favicon-32x32.png',
