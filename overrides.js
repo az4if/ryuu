@@ -1,4 +1,7 @@
 /* Mapper-backed episode metadata and the dedicated Ryuu watch page. */
+PLAYER_SOURCES.megaplayAni.label = 'MegaPlay · AL';
+PLAYER_SOURCES.anixoAni.label = 'AnixO · AL';
+PLAYER_SOURCES.megavidAni.label = 'MegaVid · AL';
 function cleanDescription(value = '') {
   const text = String(value).replace(/<br\s*\/?\s*>/gi, '\n').replace(/<\/(?:p|div|li|h[1-6])\s*>/gi, '\n').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/gi, ' ');
   const decode = document.createElement('textarea');
