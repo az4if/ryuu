@@ -238,7 +238,7 @@ async function loadHome() {
 function applySettings() {
   document.documentElement.classList.toggle('reduced-motion', state.settings.reducedMotion);
   document.body.classList.toggle('no-glow', !state.settings.glow);
-  document.getElementById('landing-hero')?.toggleAttribute('hidden', !state.settings.showHero);
+  document.getElementById('landing-hero')?.toggleAttribute('hidden', !state.settings.showHero || state.settings.hideSiteBanner);
   if (!state.settings.hoverCards) hideHoverCard();
   if (state.settings.reducedMotion) { stopFeatureAutoplay(); stopTopAnimeAutoplay(); }
   else { if (state.featured.length) startFeatureAutoplay(); if ((state.topAnime || []).length) startTopAnimeAutoplay(); }
@@ -249,7 +249,7 @@ function renderSettings() {
   const settings = state.settings;
   const cards = [
     ['glow', 'Glow Effect', 'Enable the glow surrounding banners and the hover-triggered glow on anime cards.'],
-    ['showHero', 'Show Hero on Home Page', 'Show Ryuu’s animated introduction on the home page.'],
+    ['hideSiteBanner', 'Hide Site Banner', 'Do not render Ryuu’s home hero/banner area. The rest of the site remains available.'],
     ['hoverCards', 'Modal popup when hovering over anime cards', 'Show the title detail popup on anime-card hover. Disabling it can improve scrolling performance.'],
     ['reducedMotion', 'Reduce Motion', 'Reduce carousel movement and interface animations.'],
     ['autoplay', 'Autoplay in web player', 'Request autoplay when your selected video provider supports it.']
@@ -432,7 +432,7 @@ async function loadHome() {
   document.getElementById('top-airing-grid').innerHTML = gridSkeletonMarkup(50);
   document.getElementById('top-anime-carousel').innerHTML = sliderSkeletonMarkup();
   document.getElementById('popular-grid').innerHTML = gridSkeletonMarkup(24);
-  document.getElementById('airing-list').innerHTML = activitySkeletonMarkup();
+  document.getElementById('airing-list').innerHTML = '';
   const query = `query Home($year: Int) { seasonal: Page(perPage: 8) { media(type: ANIME, sort: POPULARITY_DESC, status: RELEASING, season: ${current.season}, seasonYear: $year, isAdult: false) { ...AnimeCard } } airing: Page(perPage: 50) { media(type: ANIME, sort: POPULARITY_DESC, status: RELEASING, isAdult: false) { ...AnimeCard } } popular: Page(page: 1, perPage: 24) { pageInfo { hasNextPage } media(type: ANIME, sort: POPULARITY_DESC, isAdult: false) { ...AnimeCard } } } fragment AnimeCard on Media { id idMal title { romaji english native } coverImage { extraLarge large medium color } bannerImage description(asHtml: false) episodes format status season seasonYear averageScore popularity genres startDate { year month day } trailer { id site thumbnail } nextAiringEpisode { episode airingAt } }`;
   try {
     const data = await anilist(query, { year: current.year });
