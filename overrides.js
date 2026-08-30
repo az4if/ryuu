@@ -235,10 +235,22 @@ async function loadHome() {
   }
 }
 
+function renderAiring(list) {
+  state.airing = list || state.airing || [];
+  const container = document.getElementById('airing-list');
+  if (!container) return;
+  if (state.settings.hideSiteBanner) { container.innerHTML = ''; return; }
+  const tile = anime => `<article class="activity-tile" data-anime-id="${anime.id}" tabindex="0" role="button"><img src="${escapeAttribute(coverOf(anime))}" alt="${escapeAttribute(titleOf(anime))}" loading="lazy"><div class="activity-tile-copy"><strong>${escapeHTML(titleOf(anime))}</strong><span>${escapeHTML(anime.format || 'ANIME')} · ${anime.episodes || '?'} eps</span><small>★ ${anime.averageScore || '—'} · ${compactNumber(anime.popularity)} users</small></div></article>`;
+  const left = state.airing.slice(0, 3), right = state.airing.slice(3, 5);
+  container.innerHTML = `<div class="activity-lane activity-lane-left">${[...left, ...left, ...left].map(tile).join('')}</div><div class="activity-lane activity-lane-right">${[...right, ...right, ...right, ...right].map(tile).join('')}</div>`;
+}
+
 function applySettings() {
   document.documentElement.classList.toggle('reduced-motion', state.settings.reducedMotion);
   document.body.classList.toggle('no-glow', !state.settings.glow);
-  document.getElementById('landing-hero')?.toggleAttribute('hidden', !state.settings.showHero || state.settings.hideSiteBanner);
+  document.body.classList.toggle('hide-site-banner', Boolean(state.settings.hideSiteBanner));
+  document.getElementById('landing-hero')?.toggleAttribute('hidden', !state.settings.showHero);
+  if (state.airing) renderAiring(state.airing);
   if (!state.settings.hoverCards) hideHoverCard();
   if (state.settings.reducedMotion) { stopFeatureAutoplay(); stopTopAnimeAutoplay(); }
   else { if (state.featured.length) startFeatureAutoplay(); if ((state.topAnime || []).length) startTopAnimeAutoplay(); }
@@ -249,7 +261,7 @@ function renderSettings() {
   const settings = state.settings;
   const cards = [
     ['glow', 'Glow Effect', 'Enable the glow surrounding banners and the hover-triggered glow on anime cards.'],
-    ['hideSiteBanner', 'Hide Site Banner', 'Do not render Ryuu’s home hero/banner area. The rest of the site remains available.'],
+    ['hideSiteBanner', 'Hide Site Banner', 'Hide the animated anime artwork/banner column on the right side of the home page.'],
     ['hoverCards', 'Modal popup when hovering over anime cards', 'Show the title detail popup on anime-card hover. Disabling it can improve scrolling performance.'],
     ['reducedMotion', 'Reduce Motion', 'Reduce carousel movement and interface animations.'],
     ['autoplay', 'Autoplay in web player', 'Request autoplay when your selected video provider supports it.']

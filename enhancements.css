@@ -128,6 +128,7 @@
 }
 .activity-panel { mask-image: linear-gradient(to bottom, transparent 0%, #000 9%, #000 91%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 9%, #000 91%, transparent 100%); }
 .activity-panel { transform: none; opacity: 1; }
+.hide-site-banner .activity-panel { display: none; }
 .activity-lane { width: 224px; animation: none; }
 .activity-lane-left { left: 0; top: -256px; transform: translateY(calc(var(--hero-progress) * -360px)); }
 .activity-lane-right { left: 240px; top: -400px; transform: translateY(calc(var(--hero-progress) * 360px)); }
