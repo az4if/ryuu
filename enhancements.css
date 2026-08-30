@@ -35,7 +35,7 @@
 @keyframes feature-copy { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
 
 /* Zenshin-inspired title hover detail card. */
-.anime-hover-card { position: fixed; z-index: 90; width: 310px; overflow: hidden; border: 1px solid #56565e; background: #1a1a1d; box-shadow: 0 24px 58px #000000b8; opacity: 0; pointer-events: none; transform: translateY(8px) scale(.985); transition: opacity .13s ease, transform .13s ease; }
+.anime-hover-card { position: absolute; z-index: 90; width: 310px; overflow: hidden; border: 1px solid #56565e; background: #1a1a1d; box-shadow: 0 24px 58px #000000b8; opacity: 0; pointer-events: none; transform: translateY(8px) scale(.985); transition: opacity .13s ease, transform .13s ease; }
 .anime-hover-card.is-visible { opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); }
 .hover-art { position: relative; height: 140px; overflow: hidden; background: #24242a; }
 .hover-art::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, #1a1a1d 0%, transparent 65%); }
