@@ -54,7 +54,8 @@
 .hover-content h3 { margin: -8px 0 3px; position: relative; z-index: 2; max-width: 250px; color: #fff; font: 500 .87rem/1.35 var(--mono); }
 .hover-native { overflow: hidden; margin: 0 0 10px; color: var(--muted); font: .62rem var(--mono); text-overflow: ellipsis; white-space: nowrap; }
 .hover-stats { display: grid; grid-template-columns: repeat(4, 1fr); margin-bottom: 9px; border-top: 1px solid #49494f; border-bottom: 1px solid #49494f; }
-.hover-stats span { overflow: hidden; padding: 6px 4px; border-right: 1px solid #49494f; color: #d7d6da; font: .56rem var(--mono); text-align: center; text-overflow: ellipsis; white-space: nowrap; }
+.hover-stats span { overflow: hidden; padding: 6px 4px; border-right: 1px solid #49494f; color: #d7d6da; font: .56rem var(--mono); text-align: center; text-overflow: ellipsis; white-space: nowrap; display: flex; align-items: center; justify-content: center; gap: 3px; }
+.hs-icon { flex: none; width: 9px; height: 9px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .hover-stats span:last-child { border: 0; }
 .hover-genres, .hover-airing { margin: 0 0 8px; color: #c5c2e6; font: .59rem/1.45 var(--mono); }
 .hover-description { display: -webkit-box; overflow: hidden; margin: 0 0 10px; color: #c3c2c7; font: .62rem/1.55 var(--mono); -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
