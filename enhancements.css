@@ -30,9 +30,11 @@
 /* Home hero copy moves and fades on scroll, matching Zenshin's layered type treatment. */
 .landing-hero { --hero-progress: 0; }
 .hero-words { opacity: calc(1 - var(--hero-progress)); transition: opacity .08s linear; }
+.hero-words-top2 { transform: translateY(calc(-50% - 1.8em + (var(--hero-progress) * -150px))); }
 .hero-words-top { transform: translateY(calc(-50% - .9em + (var(--hero-progress) * -110px))); }
 .hero-words-middle { transform: translateY(calc(-50% + (var(--hero-progress) * -35px))); }
 .hero-words-bottom { transform: translateY(calc(-50% + .9em + (var(--hero-progress) * 110px))); }
+.hero-words-bottom2 { transform: translateY(calc(-50% + 1.8em + (var(--hero-progress) * 150px))); }
 .landing-copy { transform: translateY(calc(var(--hero-progress) * -22px)); opacity: calc(1 - var(--hero-progress)); }
 .activity-panel { transform: translateY(calc(var(--hero-progress) * 130px)); opacity: calc(1 - var(--hero-progress)); }
 .hero-collapsed .landing-copy, .hero-collapsed .activity-panel { pointer-events: none; visibility: hidden; }
