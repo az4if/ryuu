@@ -4,7 +4,7 @@
 .topbar { height: 68px; grid-template-columns: 1fr auto 1fr; }
 .brand { width: 205px; height: 66px; overflow: hidden; justify-content: flex-start; justify-self: start; }
 .search-wrap { justify-self: center; }
-.header-actions { justify-self: end; }
+.header-actions { justify-self: end; grid-column: 3; }
 .brand img { width: 220px; height: 124px; max-width: none; object-fit: contain; transform: translateX(-8px); }
 .nav-item, .icon-button, .search-control { height: var(--header-box-height); }
 .nav-item { display: inline-grid; place-items: center; }
