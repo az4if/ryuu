@@ -188,7 +188,6 @@ function showRoute(route) {
   hideHoverCard();
   document.querySelectorAll('.view').forEach(view => view.classList.toggle('is-active', view.id === `${route}-view`));
   state.route = route;
-  if (route === 'browse' && !state.browse.length) loadBrowse(true);
   window.scrollTo({ top: 0, behavior: state.settings.reducedMotion ? 'auto' : 'smooth' });
 }
 
@@ -323,7 +322,7 @@ function logoutAniList() {
 const baseSetupEvents = window.setupEvents || setupEvents;
 setupEvents = function() {
   baseSetupEvents();
-  setupBrowseControls();
+  setupSearchClear();
   document.addEventListener('click', event => {
     const action = event.target.closest('[data-anilist-menu]')?.dataset.anilistMenu;
     if (action === 'logout') { logoutAniList(); return; }
@@ -337,99 +336,47 @@ setupEvents = function() {
   });
 }
 
-/* Browse controls: year list, genre list, and wiring for the filter bar + large search. */
-function setupBrowseControls() {
-  const year = document.getElementById('browse-year');
-  if (year && year.options.length === 1) {
-    for (let value = new Date().getFullYear() + 1; value >= 1940; value -= 1) year.insertAdjacentHTML('beforeend', `<option value="${value}">${value}</option>`);
-  }
-  document.getElementById('browse-query')?.addEventListener('keydown', event => { if (event.key === 'Enter') searchFromInput(document.getElementById('browse-query').value.trim()); });
-  document.getElementById('browse-search-button')?.addEventListener('click', () => searchFromInput(document.getElementById('browse-query').value.trim()));
-  ['browse-genre', 'browse-year', 'browse-format', 'browse-status', 'browse-sort'].forEach(id => document.getElementById(id)?.addEventListener('change', () => loadBrowse(true)));
-  document.getElementById('load-more')?.addEventListener('click', () => loadBrowse(false));
-  loadBrowseGenres();
+/* Header search clear (X) button: shows once there's text, clears the field and dropdown. */
+function setupSearchClear() {
+  const input = document.getElementById('global-search');
+  const clearButton = document.getElementById('search-clear');
+  if (!input || !clearButton) return;
+  const syncClearButton = () => clearButton.hidden = !input.value;
+  input.addEventListener('input', syncClearButton);
+  clearButton.addEventListener('click', event => {
+    event.preventDefault();
+    event.stopPropagation();
+    input.value = '';
+    syncClearButton();
+    closeSearchDropdown();
+    input.focus();
+  });
+  syncClearButton();
 }
 
-async function loadBrowseGenres() {
-  const select = document.getElementById('browse-genre');
-  if (!select || select.dataset.loaded) return;
+/* Header search: with no dedicated Browse page to land on, Enter jumps straight to the
+   top AniList match instead of navigating anywhere — the live dropdown (app.js) still
+   covers quick title lookups while typing. */
+async function searchFromInput(term) {
+  const input = document.getElementById('global-search');
+  const value = (term ?? input?.value ?? '').trim();
+  const dropdown = document.getElementById('search-dropdown');
+  if (!value) { closeSearchDropdown(); return; }
+  clearTimeout(state.searchTimer);
+  dropdown.hidden = false;
+  dropdown.innerHTML = '<div class="search-dropdown-loading">Searching…</div>';
+  const query = `query Search($search: String) { Page(perPage: 8) { media(type: ANIME, search: $search, isAdult: false) { id idMal title { romaji english native } coverImage { extraLarge large medium color } bannerImage description(asHtml: false) episodes format status season seasonYear averageScore popularity genres startDate { year month day } trailer { id site thumbnail } nextAiringEpisode { episode airingAt } } } }`;
   try {
-    const data = await anilist('query { GenreCollection }', {});
-    select.insertAdjacentHTML('beforeend', data.GenreCollection.map(genre => `<option value="${escapeAttribute(genre)}">${escapeHTML(genre)}</option>`).join(''));
-    select.dataset.loaded = 'true';
-  } catch { /* The all-genres default continues to work if AniList is unavailable. */ }
-}
-
-function browseFilterValues() {
-  return {
-    genre: document.getElementById('browse-genre')?.value || '',
-    year: document.getElementById('browse-year')?.value || '',
-    format: document.getElementById('browse-format')?.value || '',
-    status: document.getElementById('browse-status')?.value || ''
-  };
-}
-
-/* Header/browse search: takes the query straight to the Browse page, like the original
-   Ryuu design — the header dropdown (app.js) stays for quick title lookups while typing. */
-function searchFromInput(term) {
-  const value = (term ?? document.getElementById('global-search')?.value ?? '').trim();
-  state.browseQuery = value;
-  const browseInput = document.getElementById('browse-query');
-  const globalInput = document.getElementById('global-search');
-  if (browseInput) browseInput.value = value;
-  if (globalInput) globalInput.value = value;
-  document.getElementById('browse-title').textContent = value ? `Results for “${value}”` : 'Browse anime';
-  document.getElementById('browse-subtitle').textContent = value ? 'AniList results matching your search and filters.' : 'Explore AniList’s anime library with focused filters.';
-  closeSearchDropdown();
-  showRoute('browse');
-  loadBrowse(true);
-}
-
-/* Same query-building pattern as api.py's /filter endpoint: build the `args` list and
-   `variables` dict together (only for filters that are actually set), then build the
-   matching `var_types` declarations in a second pass — mirroring the Python 1:1,
-   including the singular genre/format/status/seasonYear field names it queries with. */
-const BROWSE_SORT_MAP = {
-  POPULARITY_DESC: 'POPULARITY_DESC',
-  TRENDING_DESC: 'TRENDING_DESC',
-  SCORE_DESC: 'SCORE_DESC',
-  UPDATED_AT_DESC: 'UPDATED_AT_DESC',
-  START_DATE_DESC: 'START_DATE_DESC'
-};
-
-async function loadBrowse(reset = true) {
-  if (reset) { state.browsePage = 1; state.browse = []; }
-  const grid = document.getElementById('browse-grid');
-  if (reset) grid.innerHTML = gridSkeletonMarkup(24);
-  const filters = browseFilterValues();
-  const sortInput = document.getElementById('browse-sort')?.value;
-
-  const args = ['type: ANIME', `sort: [${BROWSE_SORT_MAP[sortInput] || 'POPULARITY_DESC'}]`];
-  const variables = { page: state.browsePage, perPage: 24 };
-
-  if (state.browseQuery) { args.push('search: $search'); variables.search = state.browseQuery; }
-  if (filters.genre) { args.push('genre: $genre'); variables.genre = filters.genre; }
-  if (filters.year) { args.push('seasonYear: $seasonYear'); variables.seasonYear = Number(filters.year); }
-  if (filters.format) { args.push('format: $format'); variables.format = filters.format; }
-  if (filters.status) { args.push('status: $status'); variables.status = filters.status; }
-
-  const varTypes = ['$page: Int', '$perPage: Int'];
-  if (state.browseQuery) varTypes.push('$search: String');
-  if (filters.genre) varTypes.push('$genre: String');
-  if (filters.year) varTypes.push('$seasonYear: Int');
-  if (filters.format) varTypes.push('$format: MediaFormat');
-  if (filters.status) varTypes.push('$status: MediaStatus');
-
-  const query = `query (${varTypes.join(', ')}) { Page(page: $page, perPage: $perPage) { pageInfo { hasNextPage } media(${args.join(', ')}) { id idMal title { romaji english native } coverImage { extraLarge large medium color } bannerImage description(asHtml: false) episodes format status season seasonYear averageScore popularity genres startDate { year month day } trailer { id site thumbnail } nextAiringEpisode { episode airingAt } } } }`;
-
-  try {
-    const data = await anilist(query, variables);
-    state.browse.push(...data.Page.media);
-    state.browsePage += 1;
-    renderAnimeGrid('browse-grid', state.browse);
-    document.getElementById('load-more').hidden = !data.Page.pageInfo.hasNextPage;
+    const data = await anilist(query, { search: value });
+    const [first] = data.Page.media;
+    if (!first) { renderSearchDropdown([]); return; }
+    state.cardData.set(first.id, first);
+    closeSearchDropdown();
+    if (input) input.value = '';
+    document.getElementById('search-clear')?.setAttribute('hidden', '');
+    openAnime(first.id);
   } catch (error) {
-    grid.innerHTML = `<div class="empty-state">Could not load the library. ${escapeHTML(error.message)}</div>`;
+    dropdown.innerHTML = '<div class="search-dropdown-empty">Could not search AniList.</div>';
   }
 }
 
