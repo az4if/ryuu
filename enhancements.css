@@ -162,8 +162,8 @@
 .metadata span { border: 0; border-right: 1px solid #3c3c43; padding: 0 9px; color: #d0ced4; font: .62rem var(--mono); }.metadata span:first-child { padding-left: 0; }.metadata span:last-child { border: 0; }
 .detail-fact { margin: 0 0 6px; color: #aaa8af; font-size: .63rem; }.detail-fact b { min-width: 53px; color: #e0dfe5; }
 .genre-list { margin: 9px 0; padding-bottom: 9px; border-bottom: 1px solid #45454d; }.genre { border: 0; padding: 0; color: #d0ccef; font-size: .62rem; }.genre:not(:last-child)::after { content: ' •'; color: #686671; }
-.description { max-width: 790px; max-height: 122px; overflow: auto; padding-right: 8px; color: #a9a8ae; font: .69rem/1.75 var(--mono); }
-.external-links { margin-top: 14px; }.external-links a { border: 0; padding: 0; color: #bcb8ef; font-size: .63rem; }.external-links a:not(:last-child)::after { content: ' /'; padding: 0 7px; color: #66646d; }
+.description { max-width: 790px; max-height: 122px; overflow: auto; padding-right: 8px; color: #a9a8ae; font: .69rem/1.75 var(--mono); text-align: left; }
+.external-links { margin-top: 14px; text-align: left; }.external-links a { border: 0; padding: 0; color: #bcb8ef; font-size: .63rem; }.external-links a:not(:last-child)::after { content: ' /'; padding: 0 7px; color: #66646d; }
 .anilist-progress { margin: 0 0 9px; border-color: #4f4b75; padding: 4px 6px; font-size: .58rem; }
 
 /* Player is the first section after the detail header; the episode browser follows below it. */
