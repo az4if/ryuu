@@ -2,10 +2,14 @@
 
 /* A shared 40px rhythm gives the Zenshin-style header a single clean baseline. */
 .topbar { height: var(--topbar-h); grid-template-columns: 1fr auto 1fr; position: relative; }
-.brand { width: clamp(135px, 20vw, 205px); height: clamp(56px, 8vw, 66px); overflow: hidden; justify-content: flex-start; justify-self: start; }
+.brand { width: clamp(135px, 20vw, 222px); height: clamp(56px, 8vw, 71px); overflow: hidden; justify-content: flex-start; justify-self: start; }
 .search-wrap { justify-self: center; }
 .header-actions { justify-self: end; grid-column: 3; }
-.brand img { width: clamp(150px, 22vw, 220px); height: clamp(84px, 12vw, 124px); max-width: none; object-fit: contain; transform: translateX(-6px); }
+.brand img { width: clamp(150px, 22vw, 238px); height: clamp(84px, 12vw, 134px); max-width: none; object-fit: contain; transform: translateX(-6px); }
+/* When the intro banner is hidden (via settings), the topbar logo is the only brand mark left,
+   so it grows to take up the visual weight the hero logo would otherwise carry. */
+.app-shell:has(#landing-hero[hidden]) .brand { width: clamp(160px, 24vw, 258px); height: clamp(66px, 9.5vw, 84px); }
+.app-shell:has(#landing-hero[hidden]) .brand img { width: clamp(178px, 26.5vw, 280px); height: clamp(96px, 14vw, 158px); }
 .nav-item, .icon-button, .search-control { height: var(--header-box-height); }
 .nav-item { display: inline-grid; place-items: center; }
 .icon-button { display: inline-grid; place-items: center; min-width: var(--header-box-height); padding: 0 10px; }
@@ -26,9 +30,9 @@
 /* Home hero copy moves and fades on scroll, matching Zenshin's layered type treatment. */
 .landing-hero { --hero-progress: 0; }
 .hero-words { opacity: calc(1 - var(--hero-progress)); transition: opacity .08s linear; }
-.hero-words-top { transform: translateY(calc(-50% - 1.95em + (var(--hero-progress) * -110px))); }
+.hero-words-top { transform: translateY(calc(-50% - .75em + (var(--hero-progress) * -110px))); }
 .hero-words-middle { transform: translateY(calc(-50% + (var(--hero-progress) * -35px))); }
-.hero-words-bottom { transform: translateY(calc(-50% + 1.95em + (var(--hero-progress) * 110px))); }
+.hero-words-bottom { transform: translateY(calc(-50% + .75em + (var(--hero-progress) * 110px))); }
 .landing-copy { transform: translateY(calc(var(--hero-progress) * -22px)); opacity: calc(1 - var(--hero-progress)); }
 .activity-panel { transform: translateY(calc(var(--hero-progress) * 130px)); opacity: calc(1 - var(--hero-progress)); }
 .hero-collapsed .landing-copy, .hero-collapsed .activity-panel { pointer-events: none; visibility: hidden; }
