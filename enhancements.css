@@ -192,7 +192,15 @@
 .episode-list-header .button { flex: 0 0 auto; }
 .episode-list-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; border-top: 1px solid #3e3e45; border-bottom: 1px solid #3e3e45; padding: 9px 0; }
 .episode-list-toolbar p { margin: 0; flex: 1 1 240px; min-width: 0; color: #9c9aa3; font: .6rem var(--mono); }
-.episode-list-toolbar .episode-filter { flex: 0 0 230px; }
+.episode-list-toolbar .episode-filter-wrap { position: relative; display: flex; align-items: center; flex: 0 0 230px; }
+.episode-list-toolbar .episode-filter { width: 100%; padding-right: 30px; }
+.episode-list-toolbar .episode-filter::-webkit-search-cancel-button, .episode-list-toolbar .episode-filter::-webkit-search-decoration { -webkit-appearance: none; appearance: none; }
+.filter-clear { position: absolute; right: 6px; display: inline-grid; flex: none; place-items: center; width: 20px; height: 20px; border: 0; padding: 0; background: transparent; color: var(--dim); }
+.filter-clear:hover { color: var(--text); }
+.filter-clear svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.filter-clear[hidden] { display: none; }
+.episode-row.is-filtered-out { display: none; }
+.episode-filter-empty { margin: 16px 0 0; color: var(--muted); font: .68rem var(--mono); text-align: center; }
 .episode-list { display: grid; grid-template-columns: 1fr; gap: 7px; margin-top: 13px; }
 .episode-row { display: grid; grid-template-columns: 154px minmax(0, 1fr) auto; min-height: 86px; overflow: hidden; border: 1px solid #424249; padding: 0; background: #1a1a1e; color: #d9d7df; text-align: left; transition: border-color .16s ease, background .16s ease, transform .16s ease; }
 button.episode-row { cursor: pointer; }
@@ -210,7 +218,7 @@ button.episode-row:hover { transform: translateX(2px); }
 .watch-page .player-frame { width: 100%; aspect-ratio: 16 / 9; }
 .watch-page .watch-header { margin-bottom: 12px; }
 .episode-row.is-watched .episode-row-number::before { content: ''; display: inline-block; width: 6px; height: 6px; margin: 0 6px 1px 0; border-radius: 50%; background: #79d995; box-shadow: 0 0 8px #79d99588; }
-@media (max-width: 760px) { .episode-list-section, .watch-page { width: min(100% - 32px, 1180px); }.episode-list-toolbar .episode-filter { flex: 1 1 100%; max-width: none; }.episode-row { grid-template-columns: 112px minmax(0, 1fr); min-height: 76px; }.episode-row-image { width: 112px; height: 76px; }.episode-row-copy { padding: 8px 10px; }.episode-row-date { display: none; }.episode-list-header { align-items: flex-start; }.episode-list-header .button { padding: 8px; } }
+@media (max-width: 760px) { .episode-list-section, .watch-page { width: min(100% - 32px, 1180px); }.episode-list-toolbar .episode-filter-wrap { flex: 1 1 100%; max-width: none; }.episode-row { grid-template-columns: 112px minmax(0, 1fr); min-height: 76px; }.episode-row-image { width: 112px; height: 76px; }.episode-row-copy { padding: 8px 10px; }.episode-row-date { display: none; }.episode-list-header { align-items: flex-start; }.episode-list-header .button { padding: 8px; } }
 
 /* Reference-style automatic home slider: image-led, quiet, and intentionally button-free. */
 .featured-section { padding-top: 36px; }

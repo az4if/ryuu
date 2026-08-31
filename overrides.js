@@ -120,21 +120,43 @@ function watchEpisodeRow(entry) {
 
 function renderEpisodeToolbar(entries) {
   const note = entries.some(entry => entry.mapped) ? 'Episode names, artwork, and summaries are from the episode mapper.' : 'Episode metadata is unavailable — showing numbered episode fallbacks.';
-  return `<div class="episode-list-toolbar"><p>${note}</p><input class="episode-filter" type="search" placeholder="Filter episodes" aria-label="Filter episodes"></div>`;
+  return `<div class="episode-list-toolbar"><p>${note}</p><div class="episode-filter-wrap"><input class="episode-filter" type="search" placeholder="Filter episodes" aria-label="Filter episodes" autocomplete="off"><button class="filter-clear" type="button" aria-label="Clear filter" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div></div>`;
 }
 
+/* Filtering toggles a class instead of the `hidden` attribute: `.episode-row` sets its own
+   `display: grid`, which ties with the browser's `[hidden]{display:none}` rule on specificity,
+   so `row.hidden = true` alone never actually hid anything. */
 function bindEpisodeFilter(scope) {
-  scope.querySelector('.episode-filter')?.addEventListener('input', event => {
-    const term = event.target.value.trim().toLowerCase();
-    scope.querySelectorAll('[data-search]').forEach(row => { row.hidden = Boolean(term) && !row.dataset.search.includes(term); });
+  const input = scope.querySelector('.episode-filter');
+  const clearButton = scope.querySelector('.filter-clear');
+  const emptyState = scope.querySelector('.episode-filter-empty');
+  if (!input) return;
+  const applyFilter = () => {
+    const term = input.value.trim().toLowerCase();
+    let visible = 0;
+    scope.querySelectorAll('[data-search]').forEach(row => {
+      const matches = !term || row.dataset.search.includes(term);
+      row.classList.toggle('is-filtered-out', !matches);
+      if (matches) visible += 1;
+    });
+    if (clearButton) clearButton.hidden = !input.value;
+    if (emptyState) emptyState.hidden = !term || visible > 0;
+  };
+  input.addEventListener('input', applyFilter);
+  clearButton?.addEventListener('click', event => {
+    event.preventDefault();
+    input.value = '';
+    applyFilter();
+    input.focus();
   });
+  applyFilter();
 }
 
 function renderDetail() {
   const anime = state.currentAnime, title = titleOf(anime), total = Number(anime.episodes) || '?', entries = anime.episodeEntries || [];
   const year = anime.startDate?.year || anime.seasonYear || '—', banner = anime.bannerImage || coverOf(anime), studios = (anime.studios?.nodes || []).map(studio => studio.name).join(', ');
   const progress = anime.mediaListEntry?.progress || 0, description = cleanDescription(anime.description) || 'No synopsis is available for this title.';
-  document.getElementById('detail-content').innerHTML = `<div class="detail-hero"><img class="detail-banner-glow" src="${escapeAttribute(banner)}" alt=""><div class="detail-banner">${anime.bannerImage ? `<img src="${escapeAttribute(anime.bannerImage)}" alt="">` : ''}</div></div><div class="detail-layout"><img class="detail-poster" src="${escapeAttribute(coverOf(anime))}" alt="${escapeAttribute(title)}"><div class="detail-body"><p class="detail-romaji">${escapeHTML(anime.title.romaji || title)}</p><h1>${escapeHTML(anime.title.english || title)}</h1><p class="detail-subtitle">${escapeHTML(anime.title.native || '')}</p><div class="metadata"><span>${escapeHTML(anime.format || 'ANIME')}</span><span>${total} episodes</span>${anime.duration ? `<span>${anime.duration} min</span>` : ''}<span>${escapeHTML(anime.status || 'UNKNOWN')}</span><span>${year}</span>${anime.averageScore ? `<span>★ ${anime.averageScore}/100</span>` : ''}<span>${Number(anime.popularity || 0).toLocaleString()} users</span></div>${state.auth.viewer ? `<div class="anilist-progress"><span>AniList progress</span><strong>${progress} / ${total}</strong></div>` : ''}${studios ? `<p class="detail-fact"><b>Studio</b> ${escapeHTML(studios)}</p>` : ''}${anime.source ? `<p class="detail-fact"><b>Source</b> ${escapeHTML(anime.source.replace(/_/g, ' '))}${anime.countryOfOrigin ? ` · ${escapeHTML(anime.countryOfOrigin)}` : ''}</p>` : ''}<div class="genre-list">${(anime.genres || []).map(genre => `<span class="genre">${escapeHTML(genre)}</span>`).join('')}</div><div class="description">${escapeHTML(description)}</div><div class="external-links"><a href="https://anilist.co/anime/${anime.id}" target="_blank" rel="noreferrer">AniList ↗</a>${anime.idMal ? `<a href="https://myanimelist.net/anime/${anime.idMal}" target="_blank" rel="noreferrer">MyAnimeList ↗</a>` : ''}${anime.trailer?.site === 'youtube' ? `<a href="https://www.youtube.com/watch?v=${anime.trailer.id}" target="_blank" rel="noreferrer">Trailer ↗</a>` : ''}</div></div></div><section class="episode-list-section"><div class="episode-list-header"><div><h2>Episodes</h2><p>${entries.length ? `${entries.length} released episode${entries.length === 1 ? '' : 's'} available to watch.` : 'No episodes are available yet.'}</p></div><button id="watch-first" class="button button-primary" type="button" ${entries.length ? '' : 'disabled'}>Watch now <span>→</span></button></div>${renderEpisodeToolbar(entries)}<div class="episode-list">${entries.map(entry => titleEpisodeRow(entry, progress)).join('') || '<div class="empty-state">AniList has not released an episode for this title yet.</div>'}</div></section>${relationsMarkup(anime)}`;
+  document.getElementById('detail-content').innerHTML = `<div class="detail-hero"><img class="detail-banner-glow" src="${escapeAttribute(banner)}" alt=""><div class="detail-banner">${anime.bannerImage ? `<img src="${escapeAttribute(anime.bannerImage)}" alt="">` : ''}</div></div><div class="detail-layout"><img class="detail-poster" src="${escapeAttribute(coverOf(anime))}" alt="${escapeAttribute(title)}"><div class="detail-body"><p class="detail-romaji">${escapeHTML(anime.title.romaji || title)}</p><h1>${escapeHTML(anime.title.english || title)}</h1><p class="detail-subtitle">${escapeHTML(anime.title.native || '')}</p><div class="metadata"><span>${escapeHTML(anime.format || 'ANIME')}</span><span>${total} episodes</span>${anime.duration ? `<span>${anime.duration} min</span>` : ''}<span>${escapeHTML(anime.status || 'UNKNOWN')}</span><span>${year}</span>${anime.averageScore ? `<span>★ ${anime.averageScore}/100</span>` : ''}<span>${Number(anime.popularity || 0).toLocaleString()} users</span></div>${state.auth.viewer ? `<div class="anilist-progress"><span>AniList progress</span><strong>${progress} / ${total}</strong></div>` : ''}${studios ? `<p class="detail-fact"><b>Studio</b> ${escapeHTML(studios)}</p>` : ''}${anime.source ? `<p class="detail-fact"><b>Source</b> ${escapeHTML(anime.source.replace(/_/g, ' '))}${anime.countryOfOrigin ? ` · ${escapeHTML(anime.countryOfOrigin)}` : ''}</p>` : ''}<div class="genre-list">${(anime.genres || []).map(genre => `<span class="genre">${escapeHTML(genre)}</span>`).join('')}</div><div class="description">${escapeHTML(description)}</div><div class="external-links"><a href="https://anilist.co/anime/${anime.id}" target="_blank" rel="noreferrer">AniList ↗</a>${anime.idMal ? `<a href="https://myanimelist.net/anime/${anime.idMal}" target="_blank" rel="noreferrer">MyAnimeList ↗</a>` : ''}${anime.trailer?.site === 'youtube' ? `<a href="https://www.youtube.com/watch?v=${anime.trailer.id}" target="_blank" rel="noreferrer">Trailer ↗</a>` : ''}</div></div></div><section class="episode-list-section"><div class="episode-list-header"><div><h2>Episodes</h2><p>${entries.length ? `${entries.length} released episode${entries.length === 1 ? '' : 's'} available to watch.` : 'No episodes are available yet.'}</p></div><button id="watch-first" class="button button-primary" type="button" ${entries.length ? '' : 'disabled'}>Watch now <span>→</span></button></div>${renderEpisodeToolbar(entries)}<div class="episode-list">${entries.map(entry => titleEpisodeRow(entry, progress)).join('') || '<div class="empty-state">AniList has not released an episode for this title yet.</div>'}</div><p class="episode-filter-empty" hidden>No episodes match your filter.</p></section>${relationsMarkup(anime)}`;
   const section = document.querySelector('.episode-list-section');
   bindEpisodeFilter(section);
   section.querySelectorAll('[data-watch-episode]').forEach(button => button.addEventListener('click', () => openWatchPage(Number(button.dataset.watchEpisode))));
@@ -162,7 +184,7 @@ function renderWatchPage() {
   const anime = state.currentAnime;
   if (!anime) return;
   const entries = anime.episodeEntries || [], progress = anime.mediaListEntry?.progress || 0;
-  document.getElementById('watch-content').innerHTML = `<section class="watch-page">${playerMarkup()}<div class="watch-header"><h2>${escapeHTML(titleOf(anime))}</h2><div class="watch-controls"><div class="language-toggle"><button class="${state.language === 'sub' ? 'is-active' : ''}" type="button" data-language="sub">Sub</button><button class="${state.language === 'dub' ? 'is-active' : ''}" type="button" data-language="dub">Dub</button></div><select id="source-select" class="source-select" aria-label="Playback source">${playerOptions(anime)}</select></div></div>${renderEpisodeToolbar(entries)}<div class="episode-list">${entries.map(watchEpisodeRow).join('')}</div><p class="player-note">Choose any released episode to switch playback source.</p></section>`;
+  document.getElementById('watch-content').innerHTML = `<section class="watch-page">${playerMarkup()}<div class="watch-header"><h2>${escapeHTML(titleOf(anime))}</h2><div class="watch-controls"><div class="language-toggle"><button class="${state.language === 'sub' ? 'is-active' : ''}" type="button" data-language="sub">Sub</button><button class="${state.language === 'dub' ? 'is-active' : ''}" type="button" data-language="dub">Dub</button></div><select id="source-select" class="source-select" aria-label="Playback source">${playerOptions(anime)}</select></div></div>${renderEpisodeToolbar(entries)}<div class="episode-list">${entries.map(watchEpisodeRow).join('')}</div><p class="episode-filter-empty" hidden>No episodes match your filter.</p><p class="player-note">Choose any released episode to switch playback source.</p></section>`;
   const page = document.querySelector('.watch-page');
   bindEpisodeFilter(page);
   page.querySelectorAll('[data-language]').forEach(button => button.addEventListener('click', () => { state.language = button.dataset.language; renderWatchPage(); }));
