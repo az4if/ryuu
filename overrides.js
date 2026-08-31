@@ -304,7 +304,7 @@ function updateAnilistUI() {
     renderAniListDropdown();
   } else {
     button.classList.remove('is-connected');
-    button.textContent = 'Login';
+    button.innerHTML = `<svg class="login-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/></svg><span class="login-label">Login</span>`;
     button.title = 'Login with AniList';
     closeAniListDropdown();
   }
@@ -333,6 +333,7 @@ const baseSetupEvents = window.setupEvents || setupEvents;
 setupEvents = function() {
   baseSetupEvents();
   setupSearchClear();
+  setupSearchToggle();
   document.addEventListener('click', event => {
     const action = event.target.closest('[data-anilist-menu]')?.dataset.anilistMenu;
     if (action === 'logout') { logoutAniList(); return; }
@@ -343,6 +344,40 @@ setupEvents = function() {
       return;
     }
     if (!event.target.closest('.anilist-menu')) closeAniListDropdown();
+  });
+}
+
+/* Compact-header search: below the 900px breakpoint the inline bar becomes a toggle
+   button. Opening it drops a full-width search bar under the header and swaps the
+   icon to a close (X) glyph; closing it clears any in-progress search. */
+function setMobileSearchOpen(open) {
+  const topbarEl = document.querySelector('.topbar');
+  const toggle = document.getElementById('search-toggle');
+  const input = document.getElementById('global-search');
+  if (!topbarEl || !toggle || !input) return;
+  topbarEl.classList.toggle('search-open', open);
+  toggle.setAttribute('aria-expanded', String(open));
+  if (open) {
+    input.focus();
+  } else {
+    input.blur();
+    closeSearchDropdown();
+  }
+}
+
+function setupSearchToggle() {
+  const toggle = document.getElementById('search-toggle');
+  if (!toggle) return;
+  toggle.addEventListener('click', () => {
+    setMobileSearchOpen(!document.querySelector('.topbar')?.classList.contains('search-open'));
+  });
+  document.addEventListener('click', event => {
+    if (event.target.closest('.search-result')) { setMobileSearchOpen(false); return; }
+    if (event.target.closest('.search-wrap') || event.target.closest('#search-toggle')) return;
+    setMobileSearchOpen(false);
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') setMobileSearchOpen(false);
   });
 }
 
