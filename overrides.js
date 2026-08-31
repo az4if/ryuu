@@ -187,7 +187,6 @@ async function markEpisodeWatched(episode) {
 function showRoute(route) {
   hideHoverCard();
   document.querySelectorAll('.view').forEach(view => view.classList.toggle('is-active', view.id === `${route}-view`));
-  document.querySelectorAll('.nav-item').forEach(item => item.classList.toggle('is-active', item.dataset.route === route));
   state.route = route;
   if (route === 'browse' && !state.browse.length) loadBrowse(true);
   window.scrollTo({ top: 0, behavior: state.settings.reducedMotion ? 'auto' : 'smooth' });
@@ -338,13 +337,16 @@ setupEvents = function() {
   });
 }
 
+/* Browse controls: year list, genre list, and wiring for the filter bar + large search. */
 function setupBrowseControls() {
   const year = document.getElementById('browse-year');
   if (year && year.options.length === 1) {
     for (let value = new Date().getFullYear() + 1; value >= 1940; value -= 1) year.insertAdjacentHTML('beforeend', `<option value="${value}">${value}</option>`);
   }
-  document.getElementById('browse-query')?.addEventListener('keydown', event => { if (event.key === 'Enter') searchFromInput(); });
-  ['browse-genre', 'browse-year', 'browse-format', 'browse-status'].forEach(id => document.getElementById(id)?.addEventListener('change', () => loadBrowse(true)));
+  document.getElementById('browse-query')?.addEventListener('keydown', event => { if (event.key === 'Enter') searchFromInput(document.getElementById('browse-query').value.trim()); });
+  document.getElementById('browse-search-button')?.addEventListener('click', () => searchFromInput(document.getElementById('browse-query').value.trim()));
+  ['browse-genre', 'browse-year', 'browse-format', 'browse-status', 'browse-sort'].forEach(id => document.getElementById(id)?.addEventListener('change', () => loadBrowse(true)));
+  document.getElementById('load-more')?.addEventListener('click', () => loadBrowse(false));
   loadBrowseGenres();
 }
 
@@ -360,42 +362,51 @@ async function loadBrowseGenres() {
 
 function browseFilterValues() {
   return {
-    genre: document.getElementById('browse-genre')?.value || null,
-    year: Number(document.getElementById('browse-year')?.value) || null,
-    format: document.getElementById('browse-format')?.value || null,
-    status: document.getElementById('browse-status')?.value || null
+    genre: document.getElementById('browse-genre')?.value || '',
+    year: document.getElementById('browse-year')?.value || '',
+    format: document.getElementById('browse-format')?.value || '',
+    status: document.getElementById('browse-status')?.value || ''
   };
 }
 
-function searchFromInput() {
+/* Header/browse search: takes the query straight to the Browse page, like the original
+   Ryuu design — the header dropdown (app.js) stays for quick title lookups while typing. */
+function searchFromInput(term) {
+  const value = (term ?? document.getElementById('global-search')?.value ?? '').trim();
+  state.browseQuery = value;
   const browseInput = document.getElementById('browse-query');
   const globalInput = document.getElementById('global-search');
-  const source = state.route === 'browse' ? browseInput : globalInput;
-  state.browseQuery = source?.value.trim() || '';
-  if (browseInput) browseInput.value = state.browseQuery;
-  if (globalInput) globalInput.value = state.browseQuery;
-  document.getElementById('browse-title').textContent = state.browseQuery ? `Results for “${state.browseQuery}”` : 'Browse anime';
-  document.getElementById('browse-subtitle').textContent = state.browseQuery ? 'AniList results matching your search and filters.' : 'Explore AniList’s anime library with focused filters.';
+  if (browseInput) browseInput.value = value;
+  if (globalInput) globalInput.value = value;
+  document.getElementById('browse-title').textContent = value ? `Results for “${value}”` : 'Browse anime';
+  document.getElementById('browse-subtitle').textContent = value ? 'AniList results matching your search and filters.' : 'Explore AniList’s anime library with focused filters.';
+  closeSearchDropdown();
   showRoute('browse');
   loadBrowse(true);
 }
 
+/* Anime browse/filter query, built the same way as the reference AniList API: only
+   declare and pass the variables a filter actually needs, using AniList's real
+   argument names (genres/format_in/status/seasonYear/search) instead of guessed ones. */
 async function loadBrowse(reset = true) {
   if (reset) { state.browsePage = 1; state.browse = []; }
-  const filters = browseFilterValues();
-  const sort = document.getElementById('browse-sort').value;
   const grid = document.getElementById('browse-grid');
   if (reset) grid.innerHTML = gridSkeletonMarkup(24);
-  const query = `query Browse($page: Int, $search: String, $sort: [MediaSort], $genre: [String], $year: Int, $format: [MediaFormat], $status: [MediaStatus]) { Page(page: $page, perPage: 24) { pageInfo { hasNextPage } media(type: ANIME, search: $search, sort: $sort, genre_in: $genre, seasonYear: $year, format_in: $format, status_in: $status, isAdult: false) { id idMal title { romaji english native } coverImage { extraLarge large medium color } bannerImage description(asHtml: false) episodes format status season seasonYear averageScore popularity genres startDate { year month day } trailer { id site thumbnail } nextAiringEpisode { episode airingAt } } } }`;
-  const variables = {
-    page: state.browsePage,
-    search: state.browseQuery || null,
-    sort: [sort],
-    genre: filters.genre ? [filters.genre] : null,
-    year: filters.year,
-    format: filters.format ? [filters.format] : null,
-    status: filters.status ? [filters.status] : null
-  };
+  const filters = browseFilterValues();
+  const sort = document.getElementById('browse-sort')?.value || 'POPULARITY_DESC';
+
+  const args = ['type: ANIME', 'isAdult: false', `sort: [${sort}]`];
+  const varTypes = ['$page: Int', '$perPage: Int'];
+  const variables = { page: state.browsePage, perPage: 24 };
+
+  if (state.browseQuery) { args.push('search: $search'); varTypes.push('$search: String'); variables.search = state.browseQuery; }
+  if (filters.genre) { args.push('genres: $genres'); varTypes.push('$genres: [String]'); variables.genres = [filters.genre]; }
+  if (filters.year) { args.push('seasonYear: $seasonYear'); varTypes.push('$seasonYear: Int'); variables.seasonYear = Number(filters.year); }
+  if (filters.format) { args.push('format_in: $format'); varTypes.push('$format: [MediaFormat]'); variables.format = [filters.format]; }
+  if (filters.status) { args.push('status: $status'); varTypes.push('$status: MediaStatus'); variables.status = filters.status; }
+
+  const query = `query(${varTypes.join(', ')}) { Page(page: $page, perPage: $perPage) { pageInfo { hasNextPage } media(${args.join(', ')}) { id idMal title { romaji english native } coverImage { extraLarge large medium color } bannerImage description(asHtml: false) episodes format status season seasonYear averageScore popularity genres startDate { year month day } trailer { id site thumbnail } nextAiringEpisode { episode airingAt } } } }`;
+
   try {
     const data = await anilist(query, variables);
     state.browse.push(...data.Page.media);
@@ -534,22 +545,5 @@ async function loadHome() {
     startTopAnimeAutoplay();
   } catch (error) {
     showNetworkError(['featured-carousel', 'top-airing-grid', 'popular-grid', 'airing-list'], error);
-  }
-}
-
-async function legacyLoadBrowse(reset = true) {
-  if (reset) { state.browsePage = 1; state.browse = []; }
-  const sort = document.getElementById('browse-sort').value;
-  const grid = document.getElementById('browse-grid');
-  if (reset) grid.innerHTML = gridSkeletonMarkup(24);
-  const query = `query Browse($page: Int, $search: String, $sort: [MediaSort]) { Page(page: $page, perPage: 24) { pageInfo { hasNextPage } media(type: ANIME, search: $search, sort: $sort, isAdult: false) { id idMal title { romaji english native } coverImage { extraLarge large medium color } bannerImage description(asHtml: false) episodes format status season seasonYear averageScore popularity genres startDate { year month day } trailer { id site thumbnail } nextAiringEpisode { episode airingAt } } } }`;
-  try {
-    const data = await anilist(query, { page: state.browsePage, search: state.browseQuery || null, sort: [sort] });
-    state.browse.push(...data.Page.media);
-    state.browsePage += 1;
-    renderAnimeGrid('browse-grid', state.browse);
-    document.getElementById('load-more').hidden = !data.Page.pageInfo.hasNextPage;
-  } catch (error) {
-    grid.innerHTML = `<div class="empty-state">Could not load the library. ${escapeHTML(error.message)}</div>`;
   }
 }

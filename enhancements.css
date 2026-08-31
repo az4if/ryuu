@@ -1,7 +1,7 @@
 :root { --header-box-height: 40px; }
 
 /* A shared 40px rhythm gives the Zenshin-style header a single clean baseline. */
-.topbar { height: 68px; grid-template-columns: 225px 1fr minmax(330px, 440px); }
+.topbar { height: 68px; grid-template-columns: 225px 1fr; }
 .brand { width: 205px; height: 66px; overflow: hidden; justify-content: flex-start; }
 .brand img { width: 220px; height: 124px; max-width: none; object-fit: contain; transform: translateX(-8px); }
 .nav-item, .icon-button, .search-control { height: var(--header-box-height); }
@@ -54,13 +54,13 @@
 .hover-open { width: 100%; border: 1px solid #59525d; padding: 8px; background: #28262d; color: #eeeafd; font: .63rem var(--mono); text-align: left; }
 .hover-open:hover { border-color: var(--accent); background: #39334e; }
 
-@media (max-width: 900px) { .topbar { height: 64px; grid-template-columns: 155px 1fr auto; }.brand { width: 145px; height: 62px; }.brand img { width: 170px; height: 96px; transform: translateX(-5px); }.view { min-height: calc(100vh - 64px); } }
+@media (max-width: 900px) { .topbar { height: 64px; grid-template-columns: 155px 1fr; }.brand { width: 145px; height: 62px; }.brand img { width: 170px; height: 96px; transform: translateX(-5px); }.view { min-height: calc(100vh - 64px); } }
 @media (max-width: 620px) { .topbar { grid-template-columns: 145px 1fr; }.brand { width: 135px; }.brand img { width: 160px; height: 90px; }.github-link { display: none; }.landing-logo { height: 170px; width: min(480px, 104vw); }.activity-panel { transform: none; opacity: 1; }.hero-words { opacity: .72; } }
 
 /* Replace the static airing list with the same kind of clipped, drifting card columns
    that Zenshin uses for recent activity in its hero. */
 .landing-hero { gap: clamp(38px, 7vw, 130px); }
-.landing-logo { width: min(760px, 100vw); height: 290px; transform: scale(1.2); }
+.landing-logo { width: min(760px, 100vw); height: 290px; transform: scale(1.32); }
 .landing-copy p, .landing-actions { position: relative; z-index: 2; }
 .activity-panel { position: relative; right: auto; bottom: auto; width: 485px; height: 500px; overflow: hidden; border: 0; background: transparent; box-shadow: none; backdrop-filter: none; mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent); -webkit-mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent); }
 .airing-list { position: relative; width: 100%; height: 100%; max-height: none; overflow: hidden; }
@@ -110,8 +110,8 @@
 .relation-card strong { display: -webkit-box; overflow: hidden; margin: 5px 0; color: #e4e3e8; font: 500 .62rem/1.35 var(--mono); -webkit-box-orient: vertical; -webkit-line-clamp: 2; }.relation-card small { color: #8d8c94; }
 
 @media (max-width: 1050px) { .landing-hero { gap: 24px; }.activity-panel { width: 410px; transform: translateY(calc(var(--hero-progress) * 95px)); }.activity-lane-right { left: 210px; }.activity-tile { width: 188px; height: 163px; } }
-@media (max-width: 900px) { .landing-logo { width: min(630px, 105vw); height: 230px; transform: scale(1.14); }.activity-panel { width: 420px; height: 420px; } }
-@media (max-width: 700px) { .landing-logo { height: 195px; transform: scale(1.1); }.activity-panel { width: min(430px, 92vw); height: 285px; margin: 18px 0 0; }.activity-lane-left { left: 20px; top: -435px; }.activity-lane-right { left: 205px; top: -500px; }.activity-tile { width: 165px; height: 142px; margin: 13px 0; } }
+@media (max-width: 900px) { .landing-logo { width: min(630px, 105vw); height: 230px; transform: scale(1.25); }.activity-panel { width: 420px; height: 420px; } }
+@media (max-width: 700px) { .landing-logo { height: 205px; transform: scale(1.21); }.activity-panel { width: min(430px, 92vw); height: 285px; margin: 18px 0 0; }.activity-lane-left { left: 20px; top: -435px; }.activity-lane-right { left: 205px; top: -500px; }.activity-tile { width: 165px; height: 142px; margin: 13px 0; } }
 @media (max-width: 620px) { .detail-hero { padding: 12px 0 24px; }.detail-banner-glow { inset: 22px 8% 5px; }.episode-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 620px) { .anilist-auth { width: var(--header-box-height); min-width: var(--header-box-height); padding: 0; justify-content: center; font-size: 0; }.anilist-auth::before { content: 'A'; font: 500 .75rem var(--mono); }.anilist-auth img { display: none; } }
 
@@ -124,7 +124,7 @@
 @media (min-width: 1051px) {
   .landing-hero { display: flex; justify-content: center; align-items: center; gap: 96px; padding: 0 48px; }
   .landing-copy { flex: 0 0 40%; display: flex; flex-direction: column; align-items: center; }
-  .landing-logo { width: 760px; max-width: 128%; height: 260px; transform: scale(1.46); transform-origin: center; }
+  .landing-logo { width: 760px; max-width: 128%; height: 260px; transform: scale(1.58); transform-origin: center; }
   .activity-panel { flex: 0 0 480px; width: 480px; height: 480px; margin: 0; }
 }
 .activity-panel { mask-image: linear-gradient(to bottom, transparent 0%, #000 9%, #000 91%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 9%, #000 91%, transparent 100%); }
@@ -256,6 +256,19 @@ button.episode-row:hover { transform: translateX(2px); }
 .activity-skeleton { display: grid; gap: 12px; padding: 20px 14px; }.activity-skeleton i { display: block; height: 52px; border: 1px solid #34343a; }
 .detail-skeleton { width: 100%; }.detail-skeleton-banner { display: block; height: clamp(288px, 25vw, 384px); background: linear-gradient(90deg, #202024, #29292f 65%, #1e1e22); }.detail-skeleton-layout { display: grid; grid-template-columns: 288px minmax(0, 1fr); width: min(1180px, calc(100% - 64px)); gap: 28px; margin: -64px auto 0; position: relative; }.detail-skeleton-poster { display: block; height: 400px; border: 1px solid #3b3b42; }.detail-skeleton-copy { display: grid; align-content: start; gap: 13px; padding-top: 74px; }.detail-skeleton-copy i { display: block; width: min(630px, 92%); height: 10px; }.detail-skeleton-copy i:first-child { width: min(410px, 70%); height: 22px; }.detail-skeleton-copy i:nth-child(2) { width: min(560px, 88%); }.detail-skeleton-copy i:nth-child(3) { width: min(310px, 55%); height: 28px; }.detail-skeleton-copy i:nth-child(4) { width: min(720px, 98%); height: 58px; }.detail-skeleton-episodes { display: grid; width: min(1180px, calc(100% - 64px)); gap: 7px; margin: 34px auto 72px; border-top: 1px solid #45454d; padding-top: 22px; }.detail-skeleton-episodes i { display: block; height: 86px; }
 @media (max-width: 760px) { .feature-skeleton { height: 330px; }.feature-skeleton-copy { top: auto; right: 24px; bottom: 32px; left: 24px; width: auto; }.detail-skeleton-banner { height: 225px; }.detail-skeleton-layout { grid-template-columns: 135px minmax(0, 1fr); width: min(100% - 32px, 1180px); gap: 16px; margin-top: -42px; }.detail-skeleton-poster { height: 195px; }.detail-skeleton-copy { padding-top: 46px; }.detail-skeleton-episodes { width: min(100% - 32px, 1180px); }.detail-skeleton-episodes i { height: 76px; } }
+
+/* Header search dropdown, matching Zenshin's inline AniList search results panel. */
+.search-wrap { position: relative; }
+.search-dropdown { position: absolute; z-index: 95; top: calc(100% + 8px); left: 0; right: 0; max-height: 360px; overflow-y: auto; border: 1px solid #4b4b54; background: #17171a; box-shadow: 0 20px 45px #000000a8; }
+.search-dropdown[hidden] { display: none; }
+.search-dropdown-loading, .search-dropdown-empty { padding: 16px 12px; color: var(--dim); font: .68rem var(--mono); text-align: center; }
+.search-result { display: flex; width: 100%; align-items: center; gap: 10px; border: 0; border-bottom: 1px solid #2c2c31; background: transparent; padding: 8px 10px; color: #e7e6ea; text-align: left; cursor: pointer; }
+.search-result:last-child { border-bottom: 0; }
+.search-result:hover, .search-result:focus-visible { background: #232327; }
+.search-result img { width: 34px; height: 48px; flex: none; border: 1px solid #3a3a40; object-fit: cover; }
+.search-result span { display: flex; min-width: 0; flex-direction: column; gap: 2px; }
+.search-result strong { overflow: hidden; color: #f1f0f3; font: 500 .7rem var(--mono); text-overflow: ellipsis; white-space: nowrap; }
+.search-result small { color: var(--dim); font: .6rem var(--mono); }
 
 /* Browse uses Home's 1440px content rhythm, with library controls grouped as one rail. */
 .browse-shell { width: min(1440px, calc(100% - 64px)); margin: 68px auto 24px; }.browse-intro { margin-bottom: 24px; }.browse-intro h1 { margin: 0; color: #f3f2f4; font-size: clamp(2rem, 3.35vw, 3.4rem); }.browse-intro > p:last-child { margin: 11px 0 0; color: #aaa8b0; font: .83rem var(--sans); }.browse-large-search { display: flex; width: min(820px, 100%); height: 56px; align-items: center; gap: 12px; margin-bottom: 11px; border: 1px solid #4a4a52; background: #18181b; transition: border-color .18s ease, box-shadow .18s ease; }.browse-large-search:focus-within { border-color: #8b7cff; box-shadow: 0 0 0 3px #8b7cff21; }.browse-large-search > span { padding-left: 16px; color: #a5a3ad; font-size: 1.5rem; }.browse-large-search input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; color: #eeecf2; font: .82rem var(--mono); }.browse-large-search input::placeholder { color: #85838c; }.browse-large-search kbd { margin-right: 10px; }.browse-filter-bar { display: flex; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid #39393f; padding: 0 0 22px; }.browse-filter-bar select { min-height: 38px; border: 1px solid #46464e; padding: 0 28px 0 10px; background: #202023; color: #d6d4db; font: .65rem var(--mono); }.browse-filter-bar select:hover,.browse-filter-bar select:focus { border-color: #8178cf; }.browse-filter-bar .button { min-height: 38px; }.browse-view > .browse-grid { width: min(1440px, calc(100% - 64px)); margin: 0 auto; }.browse-view .load-more-wrap { margin-bottom: 90px; }

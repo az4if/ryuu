@@ -21,13 +21,8 @@
       <button class="brand" type="button" data-route="home" aria-label="Go to Ryuu home">
         <img src="./assets/logo.svg" alt="Ryuu">
       </button>
-      <nav class="main-nav" aria-label="Main navigation">
-        <button class="nav-item is-active" type="button" data-route="home">Home</button>
-        <button class="nav-item" type="button" data-route="browse">Browse</button>
-        <button class="nav-item" type="button" data-route="settings">Settings</button>
-      </nav>
       <div class="header-actions">
-        <label class="search-control" for="global-search"><span aria-hidden="true">⌕</span><input id="global-search" type="search" placeholder="Search anime" autocomplete="off"><kbd>⌘ K</kbd></label>
+        <div class="search-wrap"><label class="search-control" for="global-search"><span aria-hidden="true">⌕</span><input id="global-search" type="search" placeholder="Search anime" autocomplete="off"><kbd>⌘ K</kbd></label><div id="search-dropdown" class="search-dropdown" hidden></div></div>
         <div class="anilist-menu"><button id="anilist-auth" class="anilist-auth" type="button" data-anilist-auth aria-label="Login with AniList">Login</button><div id="anilist-dropdown" class="anilist-dropdown" hidden></div></div>
         <button class="icon-button" type="button" title="Settings" aria-label="Settings" data-route="settings">⚙</button>
       </div>
@@ -36,7 +31,7 @@
       <section id="home-view" class="view is-active">
         <section class="landing-hero" id="landing-hero">
           <div class="hero-words hero-words-top" aria-hidden="true">龍 RYUU 龍 RYUU 龍</div><div class="hero-words hero-words-middle" aria-hidden="true">ANIME ANIME ANIME</div><div class="hero-words hero-words-bottom" aria-hidden="true">七転び八起き 七転び八起き</div>
-          <div class="landing-copy"><img src="./assets/logo.svg" class="landing-logo" alt="Ryuu"><p>Discover, track, and watch your favourite anime in one focused web experience.</p><div class="landing-actions"><button class="button button-primary" type="button" data-route="browse">Browse anime <span>→</span></button><button class="button button-quiet" type="button" id="jump-airing">Top airing</button></div></div>
+          <div class="landing-copy"><img src="./assets/logo.svg" class="landing-logo" alt="Ryuu"><p>Discover, track, and watch your favourite anime in one focused web experience.</p></div>
           <aside class="activity-panel" aria-label="Currently airing anime"><div id="airing-list" class="airing-list" aria-live="polite"></div></aside>
         </section>
         <section class="content-section featured-section"><div class="section-heading"><div><p class="eyebrow">DISCOVER</p><h1>Featured this season</h1></div><div class="carousel-controls"><button id="feature-prev" class="circle-button" type="button" aria-label="Previous feature">←</button><button id="feature-next" class="circle-button" type="button" aria-label="Next feature">→</button></div></div><div id="featured-carousel" class="featured-carousel"><div class="loading-block">Loading featured anime…</div></div></section>
