@@ -385,27 +385,42 @@ function searchFromInput(term) {
   loadBrowse(true);
 }
 
-/* Anime browse/filter query, built the same way as the reference AniList API: only
-   declare and pass the variables a filter actually needs, using AniList's real
-   argument names (genres/format_in/status/seasonYear/search) instead of guessed ones. */
+/* Same query-building pattern as api.py's /filter endpoint: build the `args` list and
+   `variables` dict together (only for filters that are actually set), then build the
+   matching `var_types` declarations in a second pass — mirroring the Python 1:1,
+   including the singular genre/format/status/seasonYear field names it queries with. */
+const BROWSE_SORT_MAP = {
+  POPULARITY_DESC: 'POPULARITY_DESC',
+  TRENDING_DESC: 'TRENDING_DESC',
+  SCORE_DESC: 'SCORE_DESC',
+  UPDATED_AT_DESC: 'UPDATED_AT_DESC',
+  START_DATE_DESC: 'START_DATE_DESC'
+};
+
 async function loadBrowse(reset = true) {
   if (reset) { state.browsePage = 1; state.browse = []; }
   const grid = document.getElementById('browse-grid');
   if (reset) grid.innerHTML = gridSkeletonMarkup(24);
   const filters = browseFilterValues();
-  const sort = document.getElementById('browse-sort')?.value || 'POPULARITY_DESC';
+  const sortInput = document.getElementById('browse-sort')?.value;
 
-  const args = ['type: ANIME', 'isAdult: false', `sort: [${sort}]`];
-  const varTypes = ['$page: Int', '$perPage: Int'];
+  const args = ['type: ANIME', `sort: [${BROWSE_SORT_MAP[sortInput] || 'POPULARITY_DESC'}]`];
   const variables = { page: state.browsePage, perPage: 24 };
 
-  if (state.browseQuery) { args.push('search: $search'); varTypes.push('$search: String'); variables.search = state.browseQuery; }
-  if (filters.genre) { args.push('genres: $genres'); varTypes.push('$genres: [String]'); variables.genres = [filters.genre]; }
-  if (filters.year) { args.push('seasonYear: $seasonYear'); varTypes.push('$seasonYear: Int'); variables.seasonYear = Number(filters.year); }
-  if (filters.format) { args.push('format_in: $format'); varTypes.push('$format: [MediaFormat]'); variables.format = [filters.format]; }
-  if (filters.status) { args.push('status: $status'); varTypes.push('$status: MediaStatus'); variables.status = filters.status; }
+  if (state.browseQuery) { args.push('search: $search'); variables.search = state.browseQuery; }
+  if (filters.genre) { args.push('genre: $genre'); variables.genre = filters.genre; }
+  if (filters.year) { args.push('seasonYear: $seasonYear'); variables.seasonYear = Number(filters.year); }
+  if (filters.format) { args.push('format: $format'); variables.format = filters.format; }
+  if (filters.status) { args.push('status: $status'); variables.status = filters.status; }
 
-  const query = `query(${varTypes.join(', ')}) { Page(page: $page, perPage: $perPage) { pageInfo { hasNextPage } media(${args.join(', ')}) { id idMal title { romaji english native } coverImage { extraLarge large medium color } bannerImage description(asHtml: false) episodes format status season seasonYear averageScore popularity genres startDate { year month day } trailer { id site thumbnail } nextAiringEpisode { episode airingAt } } } }`;
+  const varTypes = ['$page: Int', '$perPage: Int'];
+  if (state.browseQuery) varTypes.push('$search: String');
+  if (filters.genre) varTypes.push('$genre: String');
+  if (filters.year) varTypes.push('$seasonYear: Int');
+  if (filters.format) varTypes.push('$format: MediaFormat');
+  if (filters.status) varTypes.push('$status: MediaStatus');
+
+  const query = `query (${varTypes.join(', ')}) { Page(page: $page, perPage: $perPage) { pageInfo { hasNextPage } media(${args.join(', ')}) { id idMal title { romaji english native } coverImage { extraLarge large medium color } bannerImage description(asHtml: false) episodes format status season seasonYear averageScore popularity genres startDate { year month day } trailer { id site thumbnail } nextAiringEpisode { episode airingAt } } } }`;
 
   try {
     const data = await anilist(query, variables);
