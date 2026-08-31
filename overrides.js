@@ -2,6 +2,16 @@
 PLAYER_SOURCES.megaplayAni.label = 'MegaPlay · AL';
 PLAYER_SOURCES.anixoAni.label = 'AnixO · AL';
 PLAYER_SOURCES.megavidAni.label = 'MegaVid · AL';
+
+/* Lucide icons (stroke-based, inherits color via currentColor) used in the anime-stats row. */
+const STAT_ICON_PATHS = {
+  star: '<path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/>',
+  'user-round': '<circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/>',
+  tv: '<path d="m17 2-5 5-5-5"/><rect width="20" height="15" x="2" y="7" rx="2"/>'
+};
+function statIcon(name) {
+  return `<svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${STAT_ICON_PATHS[name] || ''}</svg>`;
+}
 function cleanDescription(value = '') {
   const text = String(value).replace(/<br\s*\/?\s*>/gi, '\n').replace(/<\/(?:p|div|li|h[1-6])\s*>/gi, '\n').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/gi, ' ');
   const decode = document.createElement('textarea');
@@ -387,7 +397,7 @@ function renderFeatured() {
   const backdrop = anime.bannerImage || coverOf(anime);
   const romaji = anime.title.romaji || titleOf(anime);
   const english = anime.title.english || anime.title.native || '';
-  const stats = `<div class="anime-stats"><span>${anime.episodes || '?'} EPS</span>${anime.averageScore ? `<span>★ ${anime.averageScore}</span>` : ''}<span>${Number(anime.popularity || 0).toLocaleString()} USERS</span><span>${escapeHTML((anime.format || 'ANIME').slice(0, 3))}</span></div>`;
+  const stats = `<div class="anime-stats"><span>${anime.episodes || '?'} EPS</span>${anime.averageScore ? `<span>${statIcon('star')} ${anime.averageScore}</span>` : ''}<span>${statIcon('user-round')} ${Number(anime.popularity || 0).toLocaleString()}</span><span>${statIcon('tv')} ${escapeHTML((anime.format || 'ANIME').slice(0, 3))}</span></div>`;
   container.innerHTML = `<div class="feature-shell"><img class="feature-glow" src="${escapeAttribute(backdrop)}" alt=""><article class="feature feature-enter" data-anime-id="${anime.id}" role="button" tabindex="0"><img class="feature-backdrop" src="${escapeAttribute(backdrop)}" alt=""><div class="feature-info"><h2>${escapeHTML(romaji)}</h2><p class="feature-native">${escapeHTML(english)}</p><p class="feature-desc">${escapeHTML(trimText(anime.description, 360) || 'No synopsis available.')}</p>${stats}</div></article></div>`;
 }
 
@@ -407,7 +417,7 @@ function sliderContent(anime) {
   const backdrop = anime.bannerImage || coverOf(anime);
   const romaji = anime.title.romaji || titleOf(anime);
   const english = anime.title.english || anime.title.native || '';
-  const stats = `<div class="anime-stats"><span>${anime.episodes || '?'} EPS</span>${anime.averageScore ? `<span>★ ${anime.averageScore}</span>` : ''}<span>${Number(anime.popularity || 0).toLocaleString()} USERS</span><span>${escapeHTML((anime.format || 'ANIME').slice(0, 3))}</span></div>`;
+  const stats = `<div class="anime-stats"><span>${anime.episodes || '?'} EPS</span>${anime.averageScore ? `<span>${statIcon('star')} ${anime.averageScore}</span>` : ''}<span>${statIcon('user-round')} ${Number(anime.popularity || 0).toLocaleString()}</span><span>${statIcon('tv')} ${escapeHTML((anime.format || 'ANIME').slice(0, 3))}</span></div>`;
   return `<img class="feature-glow" src="${escapeAttribute(backdrop)}" alt=""><article class="feature feature-enter" data-anime-id="${anime.id}" role="button" tabindex="0"><img class="feature-backdrop" src="${escapeAttribute(backdrop)}" alt=""><div class="feature-info"><h2>${escapeHTML(romaji)}</h2><p class="feature-native">${escapeHTML(english)}</p><p class="feature-desc">${escapeHTML(trimText(anime.description, 360) || 'No synopsis available.')}</p>${stats}</div></article>`;
 }
 
