@@ -347,9 +347,10 @@ setupEvents = function() {
   });
 }
 
-/* Compact-header search: below the 900px breakpoint the inline bar becomes a toggle
-   button. Opening it drops a full-width search bar under the header and swaps the
-   icon to a close (X) glyph; closing it clears any in-progress search. */
+/* Compact-header search: below the 620px breakpoint the inline bar becomes a toggle
+   button. Opening it drops an edge-to-edge search bar under the header and swaps the
+   icon to a close (X) glyph; closing it clears any in-progress search. Above 620px the
+   bar stays inline and shrinks fluidly with the viewport — no intermediate jump. */
 function setMobileSearchOpen(open) {
   const topbarEl = document.querySelector('.topbar');
   const toggle = document.getElementById('search-toggle');
