@@ -162,8 +162,8 @@
 .metadata span { border: 0; border-right: 1px solid #3c3c43; padding: 0 9px; color: #d0ced4; font: .62rem var(--mono); }.metadata span:first-child { padding-left: 0; }.metadata span:last-child { border: 0; }
 .detail-fact { margin: 0 0 6px; color: #aaa8af; font-size: .63rem; }.detail-fact b { min-width: 53px; color: #e0dfe5; }
 .genre-list { margin: 9px 0; padding-bottom: 9px; border-bottom: 1px solid #45454d; }.genre { border: 0; padding: 0; color: #d0ccef; font-size: .62rem; }.genre:not(:last-child)::after { content: ' •'; color: #686671; }
-.description { max-width: 790px; max-height: 122px; overflow: auto; padding-right: 8px; color: #a9a8ae; font: .69rem/1.75 var(--mono); text-align: left; }
-.external-links { margin-top: 14px; text-align: left; }.external-links a { border: 0; padding: 0; color: #bcb8ef; font-size: .63rem; }.external-links a:not(:last-child)::after { content: ' /'; padding: 0 7px; color: #66646d; }
+.description { max-width: 790px; max-height: 122px; overflow: auto; padding-right: 8px; color: #a9a8ae; font: .69rem/1.75 var(--mono); }
+.external-links { margin-top: 14px; }.external-links a { border: 0; padding: 0; color: #bcb8ef; font-size: .63rem; }.external-links a:not(:last-child)::after { content: ' /'; padding: 0 7px; color: #66646d; }
 .anilist-progress { margin: 0 0 9px; border-color: #4f4b75; padding: 4px 6px; font-size: .58rem; }
 
 /* Player is the first section after the detail header; the episode browser follows below it. */
@@ -180,7 +180,7 @@
 .activity-tile { width: 192px; height: 288px; margin: 24px 0; border-radius: 0; transform: matrix(1, 0, -.05, 1, 0, 0); }.activity-tile:hover { transform: matrix(1, 0, -.05, 1, 0, 0) scale(1.02); }
 .activity-tile-copy { padding: 9px; }.activity-tile-copy strong { font-size: .62rem; }.activity-tile-copy span,.activity-tile-copy small { font-size: .55rem; }
 
-@media (max-width: 760px) { .detail-layout,.watch-area,.relations-section { width: min(100% - 32px, 1180px); }.detail-layout { grid-template-columns: 135px minmax(0, 1fr); gap: 16px; margin-top: -42px; }.detail-poster { width: 135px; height: 195px; }.detail-body { min-height: 195px; padding-top: 46px; }.detail-romaji { font-size: .9rem; }.detail-body h1 { font-size: .62rem; }.description { grid-column: 1 / -1; margin-left: -151px; max-height: 132px; }.external-links { grid-column: 1 / -1; margin-left: -151px; }.detail-hero .detail-banner { height: 225px; min-height: 225px; }.watch-area { margin-top: 26px; }.watch-controls { flex-wrap: wrap; }.player-placeholder { min-height: 200px; }.relations-grid { grid-template-columns: 1fr; } }
+@media (max-width: 760px) { .detail-layout,.watch-area,.relations-section { width: min(100% - 32px, 1180px); }.detail-layout { grid-template-columns: 135px minmax(0, 1fr); gap: 16px; margin-top: -42px; }.detail-poster { width: 135px; height: 195px; }.detail-body { min-height: 195px; padding-top: 46px; }.detail-romaji { font-size: .9rem; }.detail-body h1 { font-size: .62rem; }.description { max-height: 132px; }.detail-hero .detail-banner { height: 225px; min-height: 225px; }.watch-area { margin-top: 26px; }.watch-controls { flex-wrap: wrap; }.player-placeholder { min-height: 200px; }.relations-grid { grid-template-columns: 1fr; } }
 
 /* Dedicated title and watch episode lists: metadata comes from the AniZip-compatible mapper,
    while every missing field has a predictable visual fallback. */
