@@ -10,6 +10,15 @@ document.addEventListener('click', event => {
   if (animeId) openAnime(animeId);
 });
 
+document.addEventListener('mouseover', event => {
+  const popup = event.target.closest('.anime-hover-card');
+  const card = event.target.closest('.anime-card');
+  if (!popup && !card) return;
+  const anime = state.cardData.get(Number((popup || card).dataset.anchorId || (popup || card).dataset.animeId));
+  if (!popup) return;
+  popup.style.setProperty('--anime-accent', anime?.coverImage?.color || '#ffffff');
+});
+
 function routeHash(route) {
   if (route === 'detail' && state.currentAnime?.id) return `#detail/${state.currentAnime.id}`;
   if (route === 'watch' && state.currentAnime?.id) return `#watch/${state.currentAnime.id}/${state.currentEpisode}`;
