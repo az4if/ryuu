@@ -312,7 +312,7 @@ function renderAniListDropdown() {
   const menu = document.getElementById('anilist-dropdown');
   const viewer = state.auth.viewer;
   if (!menu || !viewer) return;
-  menu.innerHTML = `<div class="anilist-dropdown-user">${viewer.avatar?.large ? `<img src="${escapeAttribute(viewer.avatar.large)}" alt="">` : ''}<span>${escapeHTML(viewer.name)}</span></div><div class="anilist-dropdown-divider"></div><button type="button" data-anilist-menu="list">My List</button><button class="is-danger" type="button" data-anilist-menu="logout">Logout</button>`;
+  menu.innerHTML = `<div class="anilist-dropdown-user">${viewer.avatar?.large ? `<img src="${escapeAttribute(viewer.avatar.large)}" alt="">` : ''}<span>${escapeHTML(viewer.name)}</span></div><div class="anilist-dropdown-divider"></div><button type="button" data-anilist-menu="list"><span>Anilist</span><svg class="external-link-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></button><button class="is-danger" type="button" data-anilist-menu="logout"><span>Logout</span><svg class="log-out-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/></svg></button>`;
 }
 
 function updateAnilistUI() {
@@ -326,7 +326,7 @@ function updateAnilistUI() {
     renderAniListDropdown();
   } else {
     button.classList.remove('is-connected');
-    button.innerHTML = `<svg class="login-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/></svg><span class="login-label">Login</span>`;
+    button.innerHTML = `<span class="login-label">Login</span><svg class="login-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/></svg>`;
     button.title = 'Login with AniList';
     closeAniListDropdown();
   }
