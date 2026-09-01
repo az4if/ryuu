@@ -117,12 +117,12 @@
 .detail-fact b { display: inline-block; min-width: 58px; color: #e1dff0; font-weight: 500; }
 .anilist-progress { display: flex; width: fit-content; gap: 14px; margin: 0 0 13px; border: 1px solid #615aa3; padding: 6px 8px; color: #c4c0ef; font: .63rem var(--mono); }.anilist-progress strong { color: #fff; font-weight: 500; }
 .anilist-progress { width: min(100%, 452px); align-items: stretch; gap: 8px; border: 0; padding: 0; }
-.detail-anilist-status { position: relative; flex: 0 0 calc(50% - 4px); min-width: 0; }
+.detail-anilist-status { position: relative; flex: 0 0 calc(40% - 4px); min-width: 0; }
 .detail-anilist-button { min-height: 38px; border-color: #756cd1; background: #3b3657; color: #eeeafd; font-size: .68rem; }
 .detail-anilist-button:hover { border-color: #9b91ff; background: #4a426f; }
 .detail-anilist-button .hover-anilist-label { flex: 1; }
 .detail-anilist-status .hover-status-menu { top: calc(100% + 4px); right: 0; bottom: auto; left: 0; }
-.detail-progress-controls { display: flex; flex: 0 0 calc(50% - 4px); min-width: 0; align-items: stretch; border: 1px solid #45454d; background: #151518; }
+.detail-progress-controls { display: flex; flex: 0 0 calc(60% - 4px); min-width: 0; align-items: stretch; border: 1px solid #45454d; background: #151518; }
 .detail-progress-controls strong { display: flex; flex: 1; min-width: 0; align-items: center; justify-content: center; gap: 4px; color: #eeeef2; font: 600 .72rem var(--mono); white-space: nowrap; }
 .detail-progress-step { display: grid; width: 38px; flex: none; place-items: center; border: 0; border-right: 1px solid #45454d; background: #29292d; color: #c8c7ce; font: 1.2rem/1 var(--mono); }
 .detail-progress-step:last-child { border-right: 0; border-left: 1px solid #45454d; }
