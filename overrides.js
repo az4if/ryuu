@@ -255,9 +255,14 @@ function bindDetailAniListProgress() {
   const total = Number(anime.episodes) || '?';
   const status = anime.mediaListEntry?.status || '';
   const statusLabel = status ? status[0] + status.slice(1).toLowerCase() : 'Add to AniList';
-  progressBox.innerHTML = `<div class="detail-anilist-status"><button class="hover-action-button hover-anilist detail-anilist-button" type="button">${HOVER_ANILIST_ICON}<span class="hover-anilist-label">${statusLabel}</span><span class="hover-action-chevron">${HOVER_CHEVRON_UP}</span></button><div class="hover-status-menu" hidden>${HOVER_ANILIST_STATUSES.map(([value, label]) => `<button type="button" data-detail-status="${value}">${label}</button>`).join('')}</div></div><div class="detail-progress-controls"><button type="button" class="detail-progress-step" data-progress-step="-1" aria-label="Decrease watched episodes">−</button><strong><span class="detail-progress-value">${progress}</span> / ${total}</strong><button type="button" class="detail-progress-step" data-progress-step="1" aria-label="Increase watched episodes">+</button></div>`;
+  progressBox.innerHTML = `<div class="detail-anilist-status"><button class="hover-action-button hover-anilist detail-anilist-button" type="button">${HOVER_ANILIST_ICON}<span class="hover-anilist-label">${statusLabel}</span><span class="hover-action-chevron">${HOVER_CHEVRON_UP}</span></button><div class="hover-status-menu" hidden>${HOVER_ANILIST_STATUSES.map(([value, label]) => `<button type="button" data-detail-status="${value}">${label}</button>`).join('')}</div></div><div class="detail-progress-controls"><button type="button" class="detail-progress-step" data-progress-step="-1" aria-label="Decrease watched episodes">−</button><strong><input class="detail-progress-value" type="text" inputmode="numeric" pattern="[0-9]*" value="${progress}" aria-label="Watched episodes"> / ${total}</strong><button type="button" class="detail-progress-step" data-progress-step="1" aria-label="Increase watched episodes">+</button></div>`;
   progressBox.querySelector('.detail-anilist-button').addEventListener('click', event => { event.stopPropagation(); const menu = progressBox.querySelector('.hover-status-menu'); menu.hidden = !menu.hidden; });
   progressBox.querySelectorAll('[data-detail-status]').forEach(button => button.addEventListener('click', event => { event.stopPropagation(); saveDetailAniListStatus(button.dataset.detailStatus); }));
+  const progressInput = progressBox.querySelector('.detail-progress-value');
+  progressInput.addEventListener('input', () => { progressInput.value = progressInput.value.replace(/\D/g, ''); });
+  progressInput.addEventListener('click', event => event.stopPropagation());
+  progressInput.addEventListener('blur', () => saveDetailAniListProgress(Number(progressInput.value || 0)));
+  progressInput.addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); progressInput.blur(); } });
   progressBox.querySelectorAll('[data-progress-step]').forEach(button => button.addEventListener('click', () => saveDetailAniListProgress(progress + Number(button.dataset.progressStep))));
 }
 
@@ -272,7 +277,8 @@ async function saveDetailAniListStatus(status) {
 
 async function saveDetailAniListProgress(progress) {
   const total = Number(state.currentAnime.episodes);
-  const nextProgress = Math.max(0, total ? Math.min(progress, total) : progress);
+  const numericProgress = Number.isFinite(progress) ? Math.floor(progress) : 0;
+  const nextProgress = Math.max(0, total ? Math.min(numericProgress, total) : numericProgress);
   try {
     const data = await anilist('mutation SaveProgress($mediaId: Int, $progress: Int) { SaveMediaListEntry(mediaId: $mediaId, progress: $progress, status: CURRENT) { id status progress } }', { mediaId: state.currentAnime.id, progress: nextProgress });
     state.currentAnime.mediaListEntry = data.SaveMediaListEntry;
