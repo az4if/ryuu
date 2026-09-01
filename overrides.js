@@ -220,6 +220,7 @@ function showRoute(route) {
   hideHoverCard();
   document.querySelectorAll('.view').forEach(view => view.classList.toggle('is-active', view.id === `${route}-view`));
   state.route = route;
+  if (route === 'anilist') initAnilistBrowse();
   window.scrollTo({ top: 0, behavior: state.settings.reducedMotion ? 'auto' : 'smooth' });
 }
 
@@ -330,6 +331,7 @@ function updateAnilistUI() {
     button.title = 'Login with AniList';
     closeAniListDropdown();
   }
+  updateAnilistBrowseAuthUI();
 }
 
 async function toggleAnilistAuth() {
@@ -575,5 +577,122 @@ async function loadHome() {
     startTopAnimeAutoplay();
   } catch (error) {
     showNetworkError(['featured-carousel', 'top-airing-grid', 'popular-grid', 'airing-list'], error);
+  }
+}
+
+const ANILIST_BROWSE_FRAGMENT = `id idMal title { romaji english native } coverImage { extraLarge large medium color } bannerImage description(asHtml: false) episodes format status season seasonYear averageScore popularity genres startDate { year month day } trailer { id site thumbnail } nextAiringEpisode { episode airingAt }`;
+
+function initAnilistBrowse() {
+  if (state.browse) return;
+  state.browse = { search: '', genre: '', format: '', season: '', year: '', status: '', sort: 'POPULARITY_DESC', watchStatus: '', page: 1, hasNext: true, loading: false, items: [], searchTimer: null, requestId: 0 };
+  const searchInput = document.getElementById('anilist-browse-search');
+  searchInput.addEventListener('input', () => {
+    clearTimeout(state.browse.searchTimer);
+    state.browse.searchTimer = setTimeout(() => {
+      state.browse.search = searchInput.value.trim();
+      runAnilistBrowse(true);
+    }, 380);
+  });
+  ['genre', 'format', 'season', 'status', 'sort'].forEach(key => {
+    document.getElementById(`anilist-filter-${key}`).addEventListener('change', event => {
+      state.browse[key] = event.target.value;
+      runAnilistBrowse(true);
+    });
+  });
+  const yearInput = document.getElementById('anilist-filter-year');
+  yearInput.addEventListener('input', () => { yearInput.value = yearInput.value.replace(/[^0-9]/g, '').slice(0, 4); });
+  yearInput.addEventListener('change', () => { state.browse.year = yearInput.value; runAnilistBrowse(true); });
+  document.getElementById('anilist-filter-watch-status').addEventListener('change', event => {
+    state.browse.watchStatus = event.target.value;
+    runAnilistBrowse(true);
+  });
+  document.getElementById('anilist-filter-clear').addEventListener('click', () => {
+    Object.assign(state.browse, { search: '', genre: '', format: '', season: '', year: '', status: '', sort: 'POPULARITY_DESC', watchStatus: '' });
+    searchInput.value = '';
+    document.querySelectorAll('.anilist-filter').forEach(el => { el.value = ''; });
+    document.getElementById('anilist-filter-sort').value = 'POPULARITY_DESC';
+    runAnilistBrowse(true);
+  });
+  setupAnilistBrowseLazyLoad();
+  updateAnilistBrowseAuthUI();
+  runAnilistBrowse(true);
+}
+
+function updateAnilistBrowseAuthUI() {
+  const select = document.getElementById('anilist-filter-watch-status');
+  if (!select) return;
+  const loggedIn = Boolean(state.auth.viewer);
+  select.hidden = !loggedIn;
+  if (!loggedIn && state.browse) { select.value = ''; state.browse.watchStatus = ''; }
+}
+
+function setupAnilistBrowseLazyLoad() {
+  state.browseObserver?.disconnect();
+  const sentinel = document.getElementById('anilist-load-sentinel');
+  if (!sentinel || !('IntersectionObserver' in window)) return;
+  state.browseObserver = new IntersectionObserver(entries => {
+    if (entries.some(entry => entry.isIntersecting)) runAnilistBrowse(false);
+  }, { rootMargin: '480px 0px' });
+  state.browseObserver.observe(sentinel);
+}
+
+async function runAnilistBrowse(reset = false) {
+  const b = state.browse;
+  if (!b) return;
+  if (reset) {
+    b.page = 1;
+    b.hasNext = true;
+    b.items = [];
+    b.requestId += 1;
+    document.getElementById('anilist-grid').innerHTML = gridSkeletonMarkup(24);
+    document.getElementById('anilist-empty').hidden = true;
+  }
+  if (b.loading || !b.hasNext) return;
+  const requestId = b.requestId;
+  b.loading = true;
+  const sentinel = document.getElementById('anilist-load-sentinel');
+  sentinel.hidden = false;
+  if (!reset) document.getElementById('anilist-grid').insertAdjacentHTML('beforeend', gridSkeletonMarkup(12));
+  try {
+    let media, hasNext;
+    if (b.watchStatus) {
+      if (b.page > 1) {
+        media = [];
+        hasNext = false;
+      } else {
+        const data = await anilist(`query MyAnilistList($userId: Int, $status: MediaListStatus) { MediaListCollection(userId: $userId, type: ANIME, status: $status, forceSingleCompletedList: true) { lists { entries { media { ${ANILIST_BROWSE_FRAGMENT} } } } } }`, { userId: state.auth.viewer?.id, status: b.watchStatus });
+        media = (data.MediaListCollection.lists || []).flatMap(list => list.entries.map(entry => entry.media));
+        hasNext = false;
+      }
+    } else {
+      const data = await anilist(`query BrowseAnilist($page: Int, $perPage: Int, $search: String, $genre: String, $format: MediaFormat, $season: MediaSeason, $seasonYear: Int, $status: MediaStatus, $sort: [MediaSort]) { Page(page: $page, perPage: $perPage) { pageInfo { hasNextPage } media(type: ANIME, search: $search, genre: $genre, format: $format, season: $season, seasonYear: $seasonYear, status: $status, sort: $sort, isAdult: false) { ${ANILIST_BROWSE_FRAGMENT} } } }`, {
+        page: b.page,
+        perPage: 24,
+        search: b.search || null,
+        genre: b.genre || null,
+        format: b.format || null,
+        season: b.season || null,
+        seasonYear: b.year ? Number(b.year) : null,
+        status: b.status || null,
+        sort: [b.sort || 'POPULARITY_DESC']
+      });
+      media = data.Page.media;
+      hasNext = data.Page.pageInfo.hasNextPage;
+    }
+    if (requestId !== b.requestId) return;
+    b.items.push(...media);
+    b.page += 1;
+    b.hasNext = hasNext;
+    renderAnimeGrid('anilist-grid', b.items);
+    document.getElementById('anilist-empty').hidden = b.items.length !== 0;
+  } catch (error) {
+    if (requestId !== b.requestId) return;
+    document.getElementById('anilist-grid').innerHTML = `<div class="empty-state">Could not load AniList results. ${escapeHTML(error.message)}</div>`;
+    b.hasNext = false;
+  } finally {
+    if (requestId === b.requestId) {
+      b.loading = false;
+      sentinel.hidden = true;
+    }
   }
 }

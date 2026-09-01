@@ -25,6 +25,7 @@
       <div class="search-wrap"><label class="search-control" for="global-search"><svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input id="global-search" type="search" placeholder="Search anime" autocomplete="off"><button id="search-clear" class="search-clear" type="button" aria-label="Clear search" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button><kbd>⌘ K</kbd></label><div id="search-dropdown" class="search-dropdown" hidden></div></div>
       <div class="header-actions">
         <button id="search-toggle" class="icon-button search-toggle" type="button" aria-label="Search" aria-expanded="false"><svg class="icon-search-glyph" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><svg class="icon-close-glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+        <button class="icon-button" type="button" title="Browse Anilist" aria-label="Browse Anilist" data-route="anilist"><svg class="list-tree-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12h-8"/><path d="M21 6H8"/><path d="M21 18h-8"/><path d="M3 6v4c0 1.1.9 2 2 2h3"/><path d="M3 10v6c0 1.1.9 2 2 2h3"/></svg></button>
         <div class="anilist-menu"><button id="anilist-auth" class="anilist-auth" type="button" data-anilist-auth aria-label="Login with AniList"><span class="login-label">Login</span><svg class="login-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/></svg></button><div id="anilist-dropdown" class="anilist-dropdown" hidden></div></div>
         <button class="icon-button" type="button" title="Settings" aria-label="Settings" data-route="settings">⚙</button>
       </div>
@@ -43,6 +44,80 @@
       <section id="detail-view" class="view"><button class="back-link" type="button" data-route="back"><svg class="back-icon" viewBox="0 0 24 24" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg><span>Back to home</span></button><div id="detail-content"></div></section>
       <section id="watch-view" class="view"><button class="back-link" type="button" data-route="detail"><svg class="back-icon" viewBox="0 0 24 24" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg><span>Back to title</span></button><div id="watch-content"></div></section>
       <section id="settings-view" class="view settings-view"><div class="page-header"><div><p class="eyebrow">PREFERENCES</p><h1>Settings</h1><p>Personalize Ryuu’s browsing and web playback experience.</p></div></div><div id="settings-content" class="settings-stack"></div><section class="shortcuts-card"><h2>Keyboard shortcuts</h2><div><span>Focus search</span><kbd>⌘ K</kbd></div><div><span>Return home</span><kbd>Esc</kbd></div><div><span>Previous / next feature</span><kbd>← / →</kbd></div></section></section>
+      <section id="anilist-view" class="view anilist-view">
+        <div class="page-header"><div><p class="eyebrow">DISCOVER</p><h1>Browse Anilist</h1><p>Search and filter the entire Anilist anime catalog.</p></div></div>
+        <div class="anilist-browse-toolbar">
+          <label class="search-control anilist-browse-search" for="anilist-browse-search"><svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input id="anilist-browse-search" type="search" placeholder="Search anime" autocomplete="off"></label>
+          <div class="anilist-filters">
+            <select id="anilist-filter-genre" class="setting-choice anilist-filter" aria-label="Genre">
+              <option value="">Genre</option>
+              <option value="Action">Action</option>
+              <option value="Adventure">Adventure</option>
+              <option value="Comedy">Comedy</option>
+              <option value="Drama">Drama</option>
+              <option value="Ecchi">Ecchi</option>
+              <option value="Fantasy">Fantasy</option>
+              <option value="Horror">Horror</option>
+              <option value="Mahou Shoujo">Mahou Shoujo</option>
+              <option value="Mecha">Mecha</option>
+              <option value="Music">Music</option>
+              <option value="Mystery">Mystery</option>
+              <option value="Psychological">Psychological</option>
+              <option value="Romance">Romance</option>
+              <option value="Sci-Fi">Sci-Fi</option>
+              <option value="Slice of Life">Slice of Life</option>
+              <option value="Sports">Sports</option>
+              <option value="Supernatural">Supernatural</option>
+              <option value="Thriller">Thriller</option>
+            </select>
+            <select id="anilist-filter-format" class="setting-choice anilist-filter" aria-label="Format">
+              <option value="">Format</option>
+              <option value="TV">TV</option>
+              <option value="TV_SHORT">TV Short</option>
+              <option value="MOVIE">Movie</option>
+              <option value="SPECIAL">Special</option>
+              <option value="OVA">OVA</option>
+              <option value="ONA">ONA</option>
+              <option value="MUSIC">Music</option>
+            </select>
+            <select id="anilist-filter-season" class="setting-choice anilist-filter" aria-label="Season">
+              <option value="">Season</option>
+              <option value="WINTER">Winter</option>
+              <option value="SPRING">Spring</option>
+              <option value="SUMMER">Summer</option>
+              <option value="FALL">Fall</option>
+            </select>
+            <input id="anilist-filter-year" class="setting-choice anilist-filter anilist-filter-year" type="text" inputmode="numeric" placeholder="Year" maxlength="4">
+            <select id="anilist-filter-status" class="setting-choice anilist-filter" aria-label="Release status">
+              <option value="">Status</option>
+              <option value="RELEASING">Releasing</option>
+              <option value="NOT_YET_RELEASED">Not yet released</option>
+              <option value="FINISHED">Finished</option>
+              <option value="HIATUS">Hiatus</option>
+              <option value="CANCELLED">Cancelled</option>
+            </select>
+            <select id="anilist-filter-sort" class="setting-choice anilist-filter" aria-label="Sort by">
+              <option value="POPULARITY_DESC">Popularity</option>
+              <option value="SCORE_DESC">Score</option>
+              <option value="TRENDING_DESC">Trending</option>
+              <option value="START_DATE_DESC">Newest</option>
+              <option value="TITLE_ROMAJI">Title A-Z</option>
+            </select>
+            <select id="anilist-filter-watch-status" class="setting-choice anilist-filter" aria-label="My list status" hidden>
+              <option value="">My list</option>
+              <option value="PLANNING">Planning</option>
+              <option value="CURRENT">Watching</option>
+              <option value="COMPLETED">Completed</option>
+              <option value="DROPPED">Dropped</option>
+              <option value="PAUSED">Paused</option>
+            </select>
+            <button id="anilist-filter-clear" class="icon-button anilist-filter-clear" type="button" title="Clear filters" aria-label="Clear filters"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button>
+          </div>
+        </div>
+        <div id="anilist-grid" class="anime-grid"></div>
+        <p id="anilist-empty" class="empty-state" hidden>No anime found. Try different filters.</p>
+        <div id="anilist-load-sentinel" class="home-infinite-loader" aria-live="polite" hidden><span class="loading-spinner" aria-hidden="true"></span><span>Loading...</span></div>
+      </section>
     </main>
     <footer class="site-footer">
       <div class="footer-inner">

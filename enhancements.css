@@ -284,3 +284,24 @@ button.episode-row:hover { transform: translateX(2px); }
 .search-result strong { overflow: hidden; color: #f1f0f3; font: 500 .7rem var(--mono); text-overflow: ellipsis; white-space: nowrap; }
 .search-result small { color: var(--dim); font: .6rem var(--mono); }
 
+
+/* Header: browse Anilist icon button */
+.list-tree-icon { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Anilist browse page */
+.anilist-view .page-header { margin-bottom: 22px; }
+.anilist-browse-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; width: min(1440px, calc(100% - 64px)); margin: 0 auto 26px; }
+.anilist-browse-search { width: 240px; flex: none; }
+.anilist-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.anilist-filter { min-width: 0; width: auto; height: var(--header-box-height, 33px); }
+.anilist-filter-year { width: 74px; text-align: left; }
+.anilist-filter-clear { border-color: #45454d; color: var(--dim); }
+.anilist-filter-clear svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.anilist-filter-clear:hover { color: #ff8686; border-color: #6a3d3d; }
+#anilist-grid, #anilist-load-sentinel, #anilist-empty { width: min(1440px, calc(100% - 64px)); margin-left: auto; margin-right: auto; }
+#anilist-empty { padding: 40px 0; text-align: center; }
+
+@media (max-width: 720px) {
+  .anilist-browse-search { width: 100%; }
+  .anilist-filter { flex: 1 1 calc(50% - 8px); }
+}
