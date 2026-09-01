@@ -5,9 +5,52 @@ PLAYER_SOURCES.megavidAni.label = 'MegaVid · AL';
 
 document.addEventListener('click', event => {
   const popup = event.target.closest('.anime-hover-card');
-  if (!popup || event.target.closest('.hover-open')) return;
+  if (!popup || event.target.closest('.hover-actions')) return;
   const animeId = Number(popup.dataset.anchorId);
   if (animeId) openAnime(animeId);
+});
+
+const HOVER_ANILIST_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M24 17.53v2.421c0 .71-.391 1.101-1.1 1.101h-5l-.057-.165L11.84 3.736c.106-.502.46-.788 1.053-.788h2.422c.71 0 1.1.391 1.1 1.1v12.38H22.9c.71 0 1.1.392 1.1 1.101zM11.034 2.947l6.337 18.104h-4.918l-1.052-3.131H6.019l-1.077 3.131H0L6.361 2.948h4.673zm-.66 10.96l-1.69-5.014-1.541 5.015h3.23z"/></svg>';
+const HOVER_YOUTUBE_ICON = '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M43.112 14.394a5 5 0 0 0-3.533-3.533c-2.314-.894-24.732-1.332-31.236.025A5 5 0 0 0 4.81 14.42c-1.045 4.583-1.124 14.491.026 19.177a5 5 0 0 0 3.533 3.533c4.583 1.055 26.371 1.203 31.236 0a5 5 0 0 0 3.533-3.533c1.114-4.993 1.193-14.287-.026-19.203"/><path d="m30.567 23.995-10.447-5.991v11.982Z"/></svg>';
+const HOVER_ANILIST_STATUSES = [['PLANNING', 'Planning'], ['CURRENT', 'Current'], ['PAUSED', 'Paused'], ['COMPLETED', 'Completed'], ['DROPPED', 'Dropped'], ['REPEATING', 'Repeating']];
+
+async function saveHoverAniListStatus(status) {
+  if (!state.auth.token) { toast('Connect AniList to update your list.', true); return; }
+  const popup = document.getElementById('anime-hover-card');
+  const animeId = Number(popup?.dataset.anchorId);
+  if (!animeId) return;
+  try {
+    await anilist('mutation SaveStatus($mediaId: Int, $status: MediaListStatus) { SaveMediaListEntry(mediaId: $mediaId, status: $status) { id status progress } }', { mediaId: animeId, status });
+    const anime = state.cardData.get(animeId);
+    if (anime) anime.mediaListEntry = { ...(anime.mediaListEntry || {}), status };
+    popup?.querySelector('.hover-anilist-label').replaceChildren(document.createTextNode(status[0] + status.slice(1).toLowerCase()));
+    popup?.querySelector('.hover-status-menu')?.setAttribute('hidden', '');
+    toast('AniList updated.');
+  } catch (error) { toast(`Could not update AniList: ${error.message}`, true); }
+}
+
+function enhanceHoverActions(popup) {
+  const oldButton = popup.querySelector('.hover-open');
+  if (!oldButton || popup.querySelector('.hover-actions')) return;
+  const anime = state.cardData.get(Number(popup.dataset.anchorId));
+  const currentStatus = anime?.mediaListEntry?.status || '';
+  const statusLabel = currentStatus ? currentStatus[0] + currentStatus.slice(1).toLowerCase() : 'Add to AniList';
+  const trailer = anime?.trailer?.site === 'youtube' ? `https://www.youtube.com/watch?v=${encodeURIComponent(anime.trailer.id)}` : '';
+  oldButton.outerHTML = `<div class="hover-actions"><div class="hover-anilist-wrap"><button class="hover-action-button hover-anilist" type="button">${HOVER_ANILIST_ICON}<span class="hover-anilist-label">${statusLabel}</span><span class="hover-action-chevron">⌄</span></button><div class="hover-status-menu" hidden>${HOVER_ANILIST_STATUSES.map(([value, label]) => `<button type="button" data-hover-status="${value}">${label}</button>`).join('')}</div></div>${trailer ? `<button class="hover-action-button hover-trailer" type="button">${HOVER_YOUTUBE_ICON}<span>Trailer</span></button>` : ''}</div>`;
+  popup.querySelector('.hover-trailer')?.addEventListener('click', event => { event.stopPropagation(); window.open(trailer, '_blank', 'noopener'); });
+}
+
+const hoverPopupObserver = new MutationObserver(() => {
+  const popup = document.getElementById('anime-hover-card');
+  if (popup) enhanceHoverActions(popup);
+});
+hoverPopupObserver.observe(document.body, { childList: true, subtree: true });
+
+document.addEventListener('click', event => {
+  const anilistButton = event.target.closest('.hover-anilist');
+  if (anilistButton) { event.stopPropagation(); const menu = anilistButton.parentElement.querySelector('.hover-status-menu'); menu.hidden = !menu.hidden; return; }
+  const statusButton = event.target.closest('[data-hover-status]');
+  if (statusButton) { event.stopPropagation(); saveHoverAniListStatus(statusButton.dataset.hoverStatus); }
 });
 
 document.addEventListener('mouseover', event => {

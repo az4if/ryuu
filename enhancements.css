@@ -61,6 +61,18 @@
 .hover-airing { color: #a89ffc; }
 .hover-open { width: 100%; border: 1px solid #59525d; padding: 8px; background: #28262d; color: #eeeafd; font: .63rem var(--mono); text-align: left; }
 .hover-open:hover { border-color: var(--accent); background: #39334e; }
+.hover-actions { display: flex; gap: 8px; margin-top: 2px; }
+.hover-anilist-wrap { position: relative; flex: 1; }
+.hover-action-button { display: flex; width: 100%; min-height: 32px; align-items: center; gap: 6px; border: 1px solid #59525d; padding: 5px 7px; background: #28262d; color: #eeeafd; font: .59rem var(--mono); text-align: left; }
+.hover-action-button:hover { border-color: var(--accent); background: #39334e; }
+.hover-action-button svg { width: 16px; height: 16px; flex: none; fill: currentColor; stroke: none; }
+.hover-trailer svg { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2; }
+.hover-anilist-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hover-action-chevron { margin-left: auto; font-size: .8rem; }
+.hover-status-menu { position: absolute; z-index: 3; right: 0; bottom: calc(100% + 4px); left: 0; overflow: hidden; border: 1px solid #59525d; background: #1a1a1d; box-shadow: 0 12px 24px #00000080; }
+.hover-status-menu[hidden] { display: none; }
+.hover-status-menu button { display: block; width: 100%; border: 0; padding: 7px 9px; background: transparent; color: #c9c7ce; font: .59rem var(--mono); text-align: left; }
+.hover-status-menu button:hover { background: #39334e; color: #fff; }
 
 @media (max-width: 620px) { .github-link { display: none; }.landing-logo { height: 170px; width: min(480px, 104vw); }.hero-words { opacity: .72; } }
 
