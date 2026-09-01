@@ -12,6 +12,7 @@ document.addEventListener('click', event => {
 
 const HOVER_ANILIST_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M24 17.53v2.421c0 .71-.391 1.101-1.1 1.101h-5l-.057-.165L11.84 3.736c.106-.502.46-.788 1.053-.788h2.422c.71 0 1.1.391 1.1 1.1v12.38H22.9c.71 0 1.1.392 1.1 1.101zM11.034 2.947l6.337 18.104h-4.918l-1.052-3.131H6.019l-1.077 3.131H0L6.361 2.948h4.673zm-.66 10.96l-1.69-5.014-1.541 5.015h3.23z"/></svg>';
 const HOVER_YOUTUBE_ICON = '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M43.112 14.394a5 5 0 0 0-3.533-3.533c-2.314-.894-24.732-1.332-31.236.025A5 5 0 0 0 4.81 14.42c-1.045 4.583-1.124 14.491.026 19.177a5 5 0 0 0 3.533 3.533c4.583 1.055 26.371 1.203 31.236 0a5 5 0 0 0 3.533-3.533c1.114-4.993 1.193-14.287-.026-19.203"/><path d="m30.567 23.995-10.447-5.991v11.982Z"/></svg>';
+const HOVER_CHEVRON_UP = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m18 15-6-6-6 6"/></svg>';
 const HOVER_ANILIST_STATUSES = [['PLANNING', 'Planning'], ['CURRENT', 'Current'], ['PAUSED', 'Paused'], ['COMPLETED', 'Completed'], ['DROPPED', 'Dropped'], ['REPEATING', 'Repeating']];
 
 async function saveHoverAniListStatus(status) {
@@ -36,7 +37,7 @@ function enhanceHoverActions(popup) {
   const currentStatus = anime?.mediaListEntry?.status || '';
   const statusLabel = currentStatus ? currentStatus[0] + currentStatus.slice(1).toLowerCase() : 'Add to AniList';
   const trailer = anime?.trailer?.site === 'youtube' ? `https://www.youtube.com/watch?v=${encodeURIComponent(anime.trailer.id)}` : '';
-  oldButton.outerHTML = `<div class="hover-actions"><div class="hover-anilist-wrap"><button class="hover-action-button hover-anilist" type="button">${HOVER_ANILIST_ICON}<span class="hover-anilist-label">${statusLabel}</span><span class="hover-action-chevron">⌄</span></button><div class="hover-status-menu" hidden>${HOVER_ANILIST_STATUSES.map(([value, label]) => `<button type="button" data-hover-status="${value}">${label}</button>`).join('')}</div></div>${trailer ? `<button class="hover-action-button hover-trailer" type="button">${HOVER_YOUTUBE_ICON}<span>Trailer</span></button>` : ''}</div>`;
+  oldButton.outerHTML = `<div class="hover-actions"><div class="hover-anilist-wrap"><button class="hover-action-button hover-anilist" type="button">${HOVER_ANILIST_ICON}<span class="hover-anilist-label">${statusLabel}</span><span class="hover-action-chevron">${HOVER_CHEVRON_UP}</span></button><div class="hover-status-menu" hidden>${HOVER_ANILIST_STATUSES.map(([value, label]) => `<button type="button" data-hover-status="${value}">${label}</button>`).join('')}</div></div>${trailer ? `<button class="hover-action-button hover-trailer" type="button"><span>Trailer</span>${HOVER_YOUTUBE_ICON}</button>` : ''}</div>`;
   popup.querySelector('.hover-trailer')?.addEventListener('click', event => { event.stopPropagation(); window.open(trailer, '_blank', 'noopener'); });
 }
 
