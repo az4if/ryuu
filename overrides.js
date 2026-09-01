@@ -731,17 +731,23 @@ async function runAnilistBrowse(reset = false) {
         hasNext = false;
       }
     } else {
-      const data = await anilist(`query BrowseAnilist($page: Int, $perPage: Int, $search: String, $genre: String, $format: MediaFormat, $season: MediaSeason, $seasonYear: Int, $status: MediaStatus, $sort: [MediaSort]) { Page(page: $page, perPage: $perPage) { pageInfo { hasNextPage } media(type: ANIME, search: $search, genre: $genre, format: $format, season: $season, seasonYear: $seasonYear, status: $status, sort: $sort, isAdult: false) { ${ANILIST_BROWSE_FRAGMENT} } } }`, {
-        page: b.page,
-        perPage: 24,
-        search: b.search || null,
-        genre: b.genre || null,
-        format: b.format || null,
-        season: b.season || null,
-        seasonYear: b.year ? Number(b.year) : null,
-        status: b.status || null,
-        sort: [b.sort || 'POPULARITY_DESC']
+      const variables = { page: b.page, perPage: 24, sort: [b.sort || 'POPULARITY_DESC'] };
+      const mediaArguments = ['type: ANIME', 'sort: $sort', 'isAdult: false'];
+      const optionalFilters = [
+        ['search', 'String', b.search],
+        ['genre', 'String', b.genre],
+        ['format', 'MediaFormat', b.format],
+        ['season', 'MediaSeason', b.season],
+        ['seasonYear', 'Int', b.year ? Number(b.year) : 0],
+        ['status', 'MediaStatus', b.status]
+      ];
+      optionalFilters.forEach(([key, type, value]) => {
+        if (!value) return;
+        variables[key] = value;
+        mediaArguments.push(`${key}: $${key}`);
       });
+      const variableDefinitions = ['$page: Int', '$perPage: Int', '$sort: [MediaSort]', ...optionalFilters.filter(([, , value]) => value).map(([key, type]) => `$${key}: ${type}`)].join(', ');
+      const data = await anilist(`query BrowseAnilist(${variableDefinitions}) { Page(page: $page, perPage: $perPage) { pageInfo { hasNextPage } media(${mediaArguments.join(', ')}) { ${ANILIST_BROWSE_FRAGMENT} } } }`, variables);
       media = data.Page.media;
       hasNext = data.Page.pageInfo.hasNextPage;
     }
