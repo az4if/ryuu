@@ -303,8 +303,7 @@ button.episode-row:hover { transform: translateX(2px); }
 .af-icon.is-filled { fill: currentColor; stroke: none; }
 .af-chevron { width: 13px; height: 13px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; opacity: .7; transition: transform .16s ease; }
 .af-field.is-open .af-chevron { transform: rotate(180deg); }
-.af-field[data-filter="year"] .af-trigger, .af-field[data-filter="watchStatus"] .af-trigger { border-color: #45454d; background: #1b1b1e; padding: 7px 11px; }
-.af-field[data-filter="watchStatus"] .af-trigger { border-color: var(--accent); color: var(--accent-bright, var(--accent)); }
+.af-field[data-filter="watchStatus"] .af-trigger { border-color: var(--accent); background: #1b1b1e; color: var(--accent-bright, var(--accent)); padding: 7px 11px; }
 .af-field[data-filter="watchStatus"].has-value .af-trigger { background: color-mix(in srgb, var(--accent) 16%, transparent); }
 
 .af-menu { position: absolute; z-index: 70; top: calc(100% + 8px); left: 0; min-width: 178px; max-height: 260px; overflow-y: auto; border: 1px solid #4b4b54; background: #202022; box-shadow: 0 14px 34px #00000088; font: .68rem var(--mono); }

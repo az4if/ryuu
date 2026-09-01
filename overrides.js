@@ -588,6 +588,7 @@ const AF_ICON_PATHS = {
   leaf: '<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>',
   radio: '<path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/>',
   sort: '<path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="M11 4h4"/><path d="M11 8h7"/><path d="M11 12h10"/>',
+  calendarRange: '<path d="M17 14h-6"/><path d="M13 18H7"/><path d="M7 14h.01"/><path d="M17 18h.01"/><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/>',
   chevron: '<path d="m7 10 5 5 5-5"/>'
 };
 
@@ -597,7 +598,7 @@ const BROWSE_FILTERS = [
   { key: 'genre', icon: 'mountain', label: 'GENRE', options: ['Action', 'Adventure', 'Comedy', 'Drama', 'Ecchi', 'Fantasy', 'Horror', 'Mahou Shoujo', 'Mecha', 'Music', 'Mystery', 'Psychological', 'Romance', 'Sci-Fi', 'Slice of Life', 'Sports', 'Supernatural', 'Thriller'].map(v => ({ value: v, label: v })) },
   { key: 'format', icon: 'tv', label: 'FORMAT', options: [['TV', 'TV'], ['TV_SHORT', 'TV Short'], ['MOVIE', 'Movie'], ['SPECIAL', 'Special'], ['OVA', 'OVA'], ['ONA', 'ONA'], ['MUSIC', 'Music']].map(([value, label]) => ({ value, label })) },
   { key: 'season', icon: 'leaf', label: 'SEASON', options: [['WINTER', 'Winter'], ['SPRING', 'Spring'], ['SUMMER', 'Summer'], ['FALL', 'Fall']].map(([value, label]) => ({ value, label })) },
-  { key: 'year', icon: null, label: 'YEAR', options: Array.from({ length: AF_CURRENT_YEAR + 2 - 1972 + 1 }, (_, i) => String(AF_CURRENT_YEAR + 2 - i)).map(v => ({ value: v, label: v })) },
+  { key: 'year', icon: 'calendarRange', label: 'YEAR', options: Array.from({ length: AF_CURRENT_YEAR + 2 - 1972 + 1 }, (_, i) => String(AF_CURRENT_YEAR + 2 - i)).map(v => ({ value: v, label: v })) },
   { key: 'status', icon: 'radio', label: 'STATUS', options: [['RELEASING', 'Releasing'], ['NOT_YET_RELEASED', 'Not Yet Released'], ['FINISHED', 'Finished'], ['HIATUS', 'Hiatus'], ['CANCELLED', 'Cancelled']].map(([value, label]) => ({ value, label })) },
   { key: 'sort', icon: 'sort', label: 'SORT', options: [['POPULARITY_DESC', 'Popularity'], ['SCORE_DESC', 'Score'], ['TRENDING_DESC', 'Trending'], ['START_DATE_DESC', 'Newest'], ['TITLE_ROMAJI', 'Title A-Z']].map(([value, label]) => ({ value, label })) }
 ];
