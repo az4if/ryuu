@@ -580,11 +580,45 @@ async function loadHome() {
   }
 }
 
-const ANILIST_BROWSE_FRAGMENT = `id idMal title { romaji english native } coverImage { extraLarge large medium color } bannerImage description(asHtml: false) episodes format status season seasonYear averageScore popularity genres startDate { year month day } trailer { id site thumbnail } nextAiringEpisode { episode airingAt }`;
+const ANILIST_BROWSE_FRAGMENT = `id idMal title { romaji english native } coverImage { extraLarge large medium color } bannerImage description(asHtml: false) episodes format status season seasonYear averageScore popularity genres startDate { year month day } trailer { id site thumbnail } nextAiringEpisode { episode airingAt } mediaListEntry { status }`;
+
+const AF_ICON_PATHS = {
+  mountain: '<path d="m8 3 4 8 5-5 5 15H2L8 3z"/>',
+  tv: '<rect width="20" height="15" x="2" y="7" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/>',
+  leaf: '<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>',
+  radio: '<path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/>',
+  sort: '<path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="M11 4h4"/><path d="M11 8h7"/><path d="M11 12h10"/>',
+  chevron: '<path d="m7 10 5 5 5-5"/>'
+};
+
+const AF_CURRENT_YEAR = new Date().getFullYear();
+
+const BROWSE_FILTERS = [
+  { key: 'genre', icon: 'mountain', label: 'GENRE', options: ['Action', 'Adventure', 'Comedy', 'Drama', 'Ecchi', 'Fantasy', 'Horror', 'Mahou Shoujo', 'Mecha', 'Music', 'Mystery', 'Psychological', 'Romance', 'Sci-Fi', 'Slice of Life', 'Sports', 'Supernatural', 'Thriller'].map(v => ({ value: v, label: v })) },
+  { key: 'format', icon: 'tv', label: 'FORMAT', options: [['TV', 'TV'], ['TV_SHORT', 'TV Short'], ['MOVIE', 'Movie'], ['SPECIAL', 'Special'], ['OVA', 'OVA'], ['ONA', 'ONA'], ['MUSIC', 'Music']].map(([value, label]) => ({ value, label })) },
+  { key: 'season', icon: 'leaf', label: 'SEASON', options: [['WINTER', 'Winter'], ['SPRING', 'Spring'], ['SUMMER', 'Summer'], ['FALL', 'Fall']].map(([value, label]) => ({ value, label })) },
+  { key: 'year', icon: null, label: 'YEAR', options: Array.from({ length: AF_CURRENT_YEAR + 2 - 1972 + 1 }, (_, i) => String(AF_CURRENT_YEAR + 2 - i)).map(v => ({ value: v, label: v })) },
+  { key: 'status', icon: 'radio', label: 'STATUS', options: [['RELEASING', 'Releasing'], ['NOT_YET_RELEASED', 'Not Yet Released'], ['FINISHED', 'Finished'], ['HIATUS', 'Hiatus'], ['CANCELLED', 'Cancelled']].map(([value, label]) => ({ value, label })) },
+  { key: 'sort', icon: 'sort', label: 'SORT', options: [['POPULARITY_DESC', 'Popularity'], ['SCORE_DESC', 'Score'], ['TRENDING_DESC', 'Trending'], ['START_DATE_DESC', 'Newest'], ['TITLE_ROMAJI', 'Title A-Z']].map(([value, label]) => ({ value, label })) }
+];
+
+const WATCH_STATUS_FILTER = { key: 'watchStatus', icon: null, label: 'WATCH STATUS', options: [['PLANNING', 'Planning'], ['CURRENT', 'Watching'], ['COMPLETED', 'Completed'], ['DROPPED', 'Dropped'], ['PAUSED', 'Paused']].map(([value, label]) => ({ value, label })) };
+
+const BROWSE_STATUS_DOT = { CURRENT: 'status-current', PLANNING: 'status-planning', COMPLETED: 'status-completed', DROPPED: 'status-dropped', PAUSED: 'status-paused' };
+const BROWSE_FORMAT_SHORT = { TV: 'TV', TV_SHORT: 'TVS', MOVIE: 'MOV', SPECIAL: 'SPE', OVA: 'OVA', ONA: 'ONA', MUSIC: 'MUS' };
+const BROWSE_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+function afFieldMarkup(def) {
+  const optionsHTML = def.options.map(o => `<button type="button" class="af-option" data-value="${escapeAttribute(o.value)}">${escapeHTML(o.label)}</button>`).join('');
+  const iconHTML = def.icon ? `<svg class="af-icon" viewBox="0 0 24 24" aria-hidden="true">${AF_ICON_PATHS[def.icon]}</svg>` : '';
+  return `<div class="af-field" data-filter="${def.key}"><button type="button" class="af-trigger" aria-haspopup="true" aria-expanded="false">${iconHTML}<span class="af-label">${escapeHTML(def.label)}</span><svg class="af-chevron" viewBox="0 0 24 24" aria-hidden="true">${AF_ICON_PATHS.chevron}</svg></button><div class="af-menu" hidden role="listbox">${optionsHTML}<div class="af-menu-divider"></div><button type="button" class="af-option af-option-any" data-value="">Any</button></div></div>`;
+}
 
 function initAnilistBrowse() {
   if (state.browse) return;
-  state.browse = { search: '', genre: '', format: '', season: '', year: '', status: '', sort: 'POPULARITY_DESC', watchStatus: '', page: 1, hasNext: true, loading: false, items: [], searchTimer: null, requestId: 0 };
+  state.browse = { search: '', genre: '', format: '', season: '', year: '', status: '', sort: '', watchStatus: '', page: 1, hasNext: true, loading: false, items: [], searchTimer: null, requestId: 0 };
+  document.getElementById('anilist-browse-filters').innerHTML = BROWSE_FILTERS.map(afFieldMarkup).join('') + afFieldMarkup(WATCH_STATUS_FILTER);
+
   const searchInput = document.getElementById('anilist-browse-search');
   searchInput.addEventListener('input', () => {
     clearTimeout(state.browse.searchTimer);
@@ -593,37 +627,70 @@ function initAnilistBrowse() {
       runAnilistBrowse(true);
     }, 380);
   });
-  ['genre', 'format', 'season', 'status', 'sort'].forEach(key => {
-    document.getElementById(`anilist-filter-${key}`).addEventListener('change', event => {
-      state.browse[key] = event.target.value;
-      runAnilistBrowse(true);
-    });
+
+  const filtersRoot = document.getElementById('anilist-browse-filters');
+  filtersRoot.addEventListener('click', event => {
+    const trigger = event.target.closest('.af-trigger');
+    if (trigger) { toggleAnilistFilterMenu(trigger.closest('.af-field')); return; }
+    const option = event.target.closest('.af-option');
+    if (option) selectAnilistFilterOption(option.closest('.af-field'), option.dataset.value, option.textContent);
   });
-  const yearInput = document.getElementById('anilist-filter-year');
-  yearInput.addEventListener('input', () => { yearInput.value = yearInput.value.replace(/[^0-9]/g, '').slice(0, 4); });
-  yearInput.addEventListener('change', () => { state.browse.year = yearInput.value; runAnilistBrowse(true); });
-  document.getElementById('anilist-filter-watch-status').addEventListener('change', event => {
-    state.browse.watchStatus = event.target.value;
-    runAnilistBrowse(true);
-  });
+  document.addEventListener('click', event => { if (!event.target.closest('.af-field')) closeAnilistFilterMenus(); });
+
   document.getElementById('anilist-filter-clear').addEventListener('click', () => {
-    Object.assign(state.browse, { search: '', genre: '', format: '', season: '', year: '', status: '', sort: 'POPULARITY_DESC', watchStatus: '' });
+    Object.assign(state.browse, { search: '', genre: '', format: '', season: '', year: '', status: '', sort: '', watchStatus: '' });
     searchInput.value = '';
-    document.querySelectorAll('.anilist-filter').forEach(el => { el.value = ''; });
-    document.getElementById('anilist-filter-sort').value = 'POPULARITY_DESC';
+    filtersRoot.querySelectorAll('.af-field').forEach(field => {
+      field.classList.remove('has-value');
+      const def = field.dataset.filter === 'watchStatus' ? WATCH_STATUS_FILTER : BROWSE_FILTERS.find(f => f.key === field.dataset.filter);
+      field.querySelector('.af-label').textContent = def.label;
+    });
     runAnilistBrowse(true);
   });
+
   setupAnilistBrowseLazyLoad();
   updateAnilistBrowseAuthUI();
   runAnilistBrowse(true);
 }
 
+function closeAnilistFilterMenus(except) {
+  document.querySelectorAll('.af-field.is-open').forEach(field => {
+    if (field === except) return;
+    field.classList.remove('is-open');
+    field.querySelector('.af-menu').hidden = true;
+    field.querySelector('.af-trigger').setAttribute('aria-expanded', 'false');
+  });
+}
+
+function toggleAnilistFilterMenu(field) {
+  const isOpen = field.classList.contains('is-open');
+  closeAnilistFilterMenus();
+  if (isOpen) return;
+  field.classList.add('is-open');
+  field.querySelector('.af-menu').hidden = false;
+  field.querySelector('.af-trigger').setAttribute('aria-expanded', 'true');
+}
+
+function selectAnilistFilterOption(field, value, labelText) {
+  const key = field.dataset.filter;
+  const def = key === 'watchStatus' ? WATCH_STATUS_FILTER : BROWSE_FILTERS.find(f => f.key === key);
+  state.browse[key] = value;
+  field.querySelector('.af-label').textContent = value ? labelText.trim() : def.label;
+  field.classList.toggle('has-value', Boolean(value));
+  closeAnilistFilterMenus();
+  runAnilistBrowse(true);
+}
+
 function updateAnilistBrowseAuthUI() {
-  const select = document.getElementById('anilist-filter-watch-status');
-  if (!select) return;
+  const field = document.querySelector('.af-field[data-filter="watchStatus"]');
+  if (!field) return;
   const loggedIn = Boolean(state.auth.viewer);
-  select.hidden = !loggedIn;
-  if (!loggedIn && state.browse) { select.value = ''; state.browse.watchStatus = ''; }
+  field.hidden = !loggedIn;
+  if (!loggedIn && state.browse) {
+    state.browse.watchStatus = '';
+    field.classList.remove('has-value');
+    field.querySelector('.af-label').textContent = WATCH_STATUS_FILTER.label;
+  }
 }
 
 function setupAnilistBrowseLazyLoad() {
@@ -656,6 +723,8 @@ async function runAnilistBrowse(reset = false) {
   try {
     let media, hasNext;
     if (b.watchStatus) {
+      // Mirrors Zenshin's searchAnilist(): a watch-status filter switches to
+      // MediaListCollection instead of Page(media), and only returns page 1.
       if (b.page > 1) {
         media = [];
         hasNext = false;
@@ -683,7 +752,7 @@ async function runAnilistBrowse(reset = false) {
     b.items.push(...media);
     b.page += 1;
     b.hasNext = hasNext;
-    renderAnimeGrid('anilist-grid', b.items);
+    renderAnilistBrowseGrid(b.items);
     document.getElementById('anilist-empty').hidden = b.items.length !== 0;
   } catch (error) {
     if (requestId !== b.requestId) return;
@@ -695,4 +764,26 @@ async function runAnilistBrowse(reset = false) {
       sentinel.hidden = true;
     }
   }
+}
+
+function renderAnilistBrowseGrid(list) {
+  const grid = document.getElementById('anilist-grid');
+  list.forEach(anime => state.cardData.set(anime.id, anime));
+  grid.innerHTML = list.length ? list.map(browseCardMarkup).join('') : '<div class="empty-state">No titles found.</div>';
+  grid.querySelectorAll('.browse-card').forEach(card => {
+    const anime = state.cardData.get(Number(card.dataset.animeId));
+    card.addEventListener('mouseenter', () => showHoverCard(anime, card));
+    card.addEventListener('mouseleave', queueHideHoverCard);
+    card.addEventListener('focus', () => showHoverCard(anime, card));
+    card.addEventListener('blur', queueHideHoverCard);
+  });
+}
+
+function browseCardMarkup(anime) {
+  const title = anime.title?.romaji || titleOf(anime);
+  const dateLabel = anime.startDate?.year ? `${BROWSE_MONTHS[(anime.startDate.month || 1) - 1]} ${anime.startDate.year}` : '';
+  const formatShort = BROWSE_FORMAT_SHORT[anime.format] || (anime.format || '').slice(0, 3);
+  const status = anime.mediaListEntry?.status;
+  const dotClass = status && BROWSE_STATUS_DOT[status];
+  return `<article class="anime-card browse-card" data-anime-id="${anime.id}" tabindex="0" role="button"><div class="browse-card-art"><img src="${escapeAttribute(coverOf(anime))}" alt="${escapeAttribute(title)}" loading="lazy"></div><div class="browse-card-info"><div class="browse-card-title" title="${escapeAttribute(title)}">${escapeHTML(title)}</div><div class="browse-card-meta"><span class="browse-card-date">${escapeHTML(dateLabel)}${dotClass ? `<span class="browse-card-dot ${dotClass}" title="${escapeAttribute(status)}"></span>` : ''}</span><span class="browse-card-format">${escapeHTML(formatShort)}</span></div></div></article>`;
 }
