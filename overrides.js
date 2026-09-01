@@ -605,10 +605,6 @@ const BROWSE_FILTERS = [
 
 const WATCH_STATUS_FILTER = { key: 'watchStatus', icon: null, label: 'WATCH STATUS', options: [['PLANNING', 'Planning'], ['CURRENT', 'Watching'], ['COMPLETED', 'Completed'], ['DROPPED', 'Dropped'], ['PAUSED', 'Paused']].map(([value, label]) => ({ value, label })) };
 
-const BROWSE_STATUS_DOT = { CURRENT: 'status-current', PLANNING: 'status-planning', COMPLETED: 'status-completed', DROPPED: 'status-dropped', PAUSED: 'status-paused' };
-const BROWSE_FORMAT_SHORT = { TV: 'TV', TV_SHORT: 'TVS', MOVIE: 'MOV', SPECIAL: 'SPE', OVA: 'OVA', ONA: 'ONA', MUSIC: 'MUS' };
-const BROWSE_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-
 function afFieldMarkup(def) {
   const optionsHTML = def.options.map(o => `<button type="button" class="af-option" data-value="${escapeAttribute(o.value)}">${escapeHTML(o.label)}</button>`).join('');
   const iconHTML = def.icon ? `<svg class="af-icon" viewBox="0 0 24 24" aria-hidden="true">${AF_ICON_PATHS[def.icon]}</svg>` : '';
@@ -768,23 +764,6 @@ async function runAnilistBrowse(reset = false) {
 }
 
 function renderAnilistBrowseGrid(list) {
-  const grid = document.getElementById('anilist-grid');
-  list.forEach(anime => state.cardData.set(anime.id, anime));
-  grid.innerHTML = list.length ? list.map(browseCardMarkup).join('') : '<div class="empty-state">No titles found.</div>';
-  grid.querySelectorAll('.browse-card').forEach(card => {
-    const anime = state.cardData.get(Number(card.dataset.animeId));
-    card.addEventListener('mouseenter', () => showHoverCard(anime, card));
-    card.addEventListener('mouseleave', queueHideHoverCard);
-    card.addEventListener('focus', () => showHoverCard(anime, card));
-    card.addEventListener('blur', queueHideHoverCard);
-  });
-}
-
-function browseCardMarkup(anime) {
-  const title = anime.title?.romaji || titleOf(anime);
-  const dateLabel = anime.startDate?.year ? `${BROWSE_MONTHS[(anime.startDate.month || 1) - 1]} ${anime.startDate.year}` : '';
-  const formatShort = BROWSE_FORMAT_SHORT[anime.format] || (anime.format || '').slice(0, 3);
-  const status = anime.mediaListEntry?.status;
-  const dotClass = status && BROWSE_STATUS_DOT[status];
-  return `<article class="anime-card browse-card" data-anime-id="${anime.id}" tabindex="0" role="button"><div class="browse-card-art"><img src="${escapeAttribute(coverOf(anime))}" alt="${escapeAttribute(title)}" loading="lazy"></div><div class="browse-card-info"><div class="browse-card-title" title="${escapeAttribute(title)}">${escapeHTML(title)}</div><div class="browse-card-meta"><span class="browse-card-date">${escapeHTML(dateLabel)}${dotClass ? `<span class="browse-card-dot ${dotClass}" title="${escapeAttribute(status)}"></span>` : ''}</span><span class="browse-card-format">${escapeHTML(formatShort)}</span></div></div></article>`;
+  if (!list.length) { document.getElementById('anilist-grid').innerHTML = ''; return; }
+  renderAnimeGrid('anilist-grid', list);
 }

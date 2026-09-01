@@ -322,21 +322,6 @@ button.episode-row:hover { transform: translateX(2px); }
 #anilist-load-sentinel, #anilist-empty { width: min(1440px, calc(100% - 64px)); margin-left: auto; margin-right: auto; }
 #anilist-empty { padding: 40px 0; text-align: center; }
 
-.browse-card { display: flex; flex-direction: column; gap: 8px; }
-.browse-card-art { position: relative; aspect-ratio: 2/2.86; overflow: hidden; border: 1px solid #44444b; background: var(--surface); }
-.browse-card-art img { width: 100%; height: 100%; object-fit: cover; }
-.browse-card-info { display: flex; flex-direction: column; gap: 5px; }
-.browse-card-title { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; color: #ebeaed; font: 500 .73rem/1.4 var(--mono); }
-.browse-card-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: var(--dim); font: .61rem var(--mono); }
-.browse-card-date { display: flex; align-items: center; gap: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.browse-card-dot { width: 7px; height: 7px; flex: none; border-radius: 50%; }
-.browse-card-dot.status-current { background: #3b82f6; }
-.browse-card-dot.status-planning { background: #9ca3af; }
-.browse-card-dot.status-completed { background: #22c55e; }
-.browse-card-dot.status-dropped { background: #b91c1c; }
-.browse-card-dot.status-paused { background: #f97316; }
-.browse-card-format { flex: none; letter-spacing: .04em; }
-
 @media (max-width: 720px) {
   .anilist-browse-toolbar { flex-wrap: wrap; }
   .anilist-browse-search { width: 100%; }
