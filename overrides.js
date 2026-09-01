@@ -3,6 +3,14 @@ PLAYER_SOURCES.megaplayAni.label = 'MegaPlay · AL';
 PLAYER_SOURCES.anixoAni.label = 'AnixO · AL';
 PLAYER_SOURCES.megavidAni.label = 'MegaVid · AL';
 
+const baseAniListRequest = anilist;
+anilist = (query, variables) => {
+  if (!query.includes('mediaListEntry')) {
+    query = query.replace(/nextAiringEpisode \{ episode airingAt \}/g, 'nextAiringEpisode { episode airingAt } mediaListEntry { status }');
+  }
+  return baseAniListRequest(query, variables);
+};
+
 document.addEventListener('click', event => {
   const popup = event.target.closest('.anime-hover-card');
   if (!popup || event.target.closest('.hover-actions')) return;

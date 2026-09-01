@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#111113">
-  <meta name="description" content="Ryuu — a web-based anime discovery and player experience.">
-  <title>Ryuu 龍</title>
+  <meta name="description" content="ryuu. — a web-based anime discovery and player experience.">
+  <title>ryuu.</title>
   <link rel="icon" href="./assets/favicon.png">
   <link rel="manifest" href="./site.webmanifest">
   <link rel="stylesheet" href="./style.css">
@@ -19,8 +19,8 @@
 <body>
   <div class="app-shell">
     <header class="topbar">
-      <button class="brand" type="button" data-route="home" aria-label="Go to Ryuu home">
-        <img src="./assets/logo.svg" alt="Ryuu">
+      <button class="brand" type="button" data-route="home" aria-label="Go to ryuu home">
+        <img src="./assets/logo.svg" alt="ryuu.">
       </button>
       <div class="search-wrap"><label class="search-control" for="global-search"><svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input id="global-search" type="search" placeholder="Search anime" autocomplete="off"><button id="search-clear" class="search-clear" type="button" aria-label="Clear search" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button><kbd>⌘ K</kbd></label><div id="search-dropdown" class="search-dropdown" hidden></div></div>
       <div class="header-actions">
@@ -34,7 +34,7 @@
       <section id="home-view" class="view is-active">
         <section class="landing-hero" id="landing-hero">
           <div class="hero-words hero-words-top2" aria-hidden="true" data-repeat="龍">龍 龍 龍 龍 龍 龍 龍 龍</div><div class="hero-words hero-words-top" aria-hidden="true" data-repeat="龍 RYUU">龍 RYUU 龍 RYUU 龍</div><div class="hero-words hero-words-middle" aria-hidden="true" data-repeat="ANIME">ANIME ANIME ANIME</div><div class="hero-words hero-words-bottom" aria-hidden="true" data-repeat="七転び八起き">七転び八起き 七転び八起き</div><div class="hero-words hero-words-bottom2" aria-hidden="true" data-repeat="RYUU 龍">RYUU 龍 RYUU 龍 RYUU 龍 RYUU 龍 RYUU 龍</div>
-          <div class="landing-copy"><img src="./assets/logo.svg" class="landing-logo" alt="Ryuu"><p>Discover, track, and watch your favourite anime in one focused web experience.</p></div>
+          <div class="landing-copy"><img src="./assets/logo.svg" class="landing-logo" alt="ryuu."><p>Discover, track, and watch your favourite anime in one focused web experience.</p></div>
           <aside class="activity-panel" aria-label="Currently airing anime"><div id="airing-list" class="airing-list" aria-live="polite"></div></aside>
         </section>
         <section class="content-section featured-section"><div class="section-heading"><div><p class="eyebrow">DISCOVER</p><h1>Featured this season</h1></div><div class="carousel-controls"><button id="feature-prev" class="circle-button" type="button" aria-label="Previous feature">←</button><button id="feature-next" class="circle-button" type="button" aria-label="Next feature">→</button></div></div><div id="featured-carousel" class="featured-carousel"><div class="loading-block">Loading featured anime…</div></div></section>
@@ -43,7 +43,7 @@
       </section>
       <section id="detail-view" class="view"><button class="back-link" type="button" data-route="back"><svg class="back-icon" viewBox="0 0 24 24" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg><span>Back to home</span></button><div id="detail-content"></div></section>
       <section id="watch-view" class="view"><button class="back-link" type="button" data-route="detail"><svg class="back-icon" viewBox="0 0 24 24" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg><span>Back to title</span></button><div id="watch-content"></div></section>
-      <section id="settings-view" class="view settings-view"><div class="page-header"><div><p class="eyebrow">PREFERENCES</p><h1>Settings</h1><p>Personalize Ryuu’s browsing and web playback experience.</p></div></div><div id="settings-content" class="settings-stack"></div><section class="shortcuts-card"><h2>Keyboard shortcuts</h2><div><span>Focus search</span><kbd>⌘ K</kbd></div><div><span>Return home</span><kbd>Esc</kbd></div><div><span>Previous / next feature</span><kbd>← / →</kbd></div></section></section>
+      <section id="settings-view" class="view settings-view"><div class="page-header"><div><p class="eyebrow">PREFERENCES</p><h1>Settings</h1><p>Personalize ryuu’s browsing and web playback experience.</p></div></div><div id="settings-content" class="settings-stack"></div><section class="shortcuts-card"><h2>Keyboard shortcuts</h2><div><span>Focus search</span><kbd>⌘ K</kbd></div><div><span>Return home</span><kbd>Esc</kbd></div><div><span>Previous / next feature</span><kbd>← / →</kbd></div></section></section>
       <section id="anilist-view" class="view anilist-view">
         <div class="page-header"><div><p class="eyebrow">DISCOVER</p><h1>Browse Anilist</h1><p>Search and filter the entire Anilist anime catalog.</p></div></div>
         <div class="anilist-browse-toolbar">
@@ -60,7 +60,7 @@
     </main>
     <footer class="site-footer">
       <div class="footer-inner">
-        <div class="footer-brand"><img src="./assets/logo.svg" alt="Ryuu"><span>Anime discovery &amp; web playback</span></div>
+        <div class="footer-brand"><img src="./assets/logo.svg" alt="ryuu."><span>Anime discovery &amp; web playback</span></div>
         <p>Metadata provided by AniList.</p>
         <a class="footer-github" href="https://github.com/az4if/ryuu" target="_blank" rel="noreferrer"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0a8 8 0 0 0-2.53 15.59c.4.07.55-.17.55-.38v-1.49c-2.23.49-2.7-.95-2.7-.95-.36-.93-.89-1.18-.89-1.18-.73-.5.06-.49.06-.49.8.06 1.23.83 1.23.83.72 1.23 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.65-.89-3.65-3.96 0-.87.31-1.58.83-2.14-.08-.2-.36-1.02.08-2.12 0 0 .68-.22 2.2.82A7.62 7.62 0 0 1 8 3.8c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.52.56.83 1.27.83 2.14 0 3.08-1.87 3.75-3.66 3.95.29.25.54.72.54 1.45v2.15c0 .21.14.46.55.38A8 8 0 0 0 8 0Z"/></svg><span>GitHub</span></a>
       </div>
