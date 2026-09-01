@@ -247,11 +247,46 @@ function bindEpisodeFilter(scope) {
   applyFilter();
 }
 
+function bindDetailAniListProgress() {
+  const progressBox = document.querySelector('.anilist-progress');
+  if (!progressBox || !state.currentAnime) return;
+  const anime = state.currentAnime;
+  const progress = Number(anime.mediaListEntry?.progress) || 0;
+  const total = Number(anime.episodes) || '?';
+  const status = anime.mediaListEntry?.status || '';
+  const statusLabel = status ? status[0] + status.slice(1).toLowerCase() : 'Add to AniList';
+  progressBox.innerHTML = `<div class="detail-anilist-status"><button class="hover-action-button hover-anilist detail-anilist-button" type="button">${HOVER_ANILIST_ICON}<span class="hover-anilist-label">${statusLabel}</span><span class="hover-action-chevron">${HOVER_CHEVRON_UP}</span></button><div class="hover-status-menu" hidden>${HOVER_ANILIST_STATUSES.map(([value, label]) => `<button type="button" data-detail-status="${value}">${label}</button>`).join('')}</div></div><div class="detail-progress-controls"><button type="button" class="detail-progress-step" data-progress-step="-1" aria-label="Decrease watched episodes">−</button><strong><span class="detail-progress-value">${progress}</span> / ${total}</strong><button type="button" class="detail-progress-step" data-progress-step="1" aria-label="Increase watched episodes">+</button></div>`;
+  progressBox.querySelector('.detail-anilist-button').addEventListener('click', event => { event.stopPropagation(); const menu = progressBox.querySelector('.hover-status-menu'); menu.hidden = !menu.hidden; });
+  progressBox.querySelectorAll('[data-detail-status]').forEach(button => button.addEventListener('click', event => { event.stopPropagation(); saveDetailAniListStatus(button.dataset.detailStatus); }));
+  progressBox.querySelectorAll('[data-progress-step]').forEach(button => button.addEventListener('click', () => saveDetailAniListProgress(progress + Number(button.dataset.progressStep))));
+}
+
+async function saveDetailAniListStatus(status) {
+  try {
+    const data = await anilist('mutation SaveStatus($mediaId: Int, $status: MediaListStatus) { SaveMediaListEntry(mediaId: $mediaId, status: $status) { id status progress } }', { mediaId: state.currentAnime.id, status });
+    state.currentAnime.mediaListEntry = data.SaveMediaListEntry;
+    renderDetail();
+    toast('AniList updated.');
+  } catch (error) { toast(`Could not update AniList: ${error.message}`, true); }
+}
+
+async function saveDetailAniListProgress(progress) {
+  const total = Number(state.currentAnime.episodes);
+  const nextProgress = Math.max(0, total ? Math.min(progress, total) : progress);
+  try {
+    const data = await anilist('mutation SaveProgress($mediaId: Int, $progress: Int) { SaveMediaListEntry(mediaId: $mediaId, progress: $progress, status: CURRENT) { id status progress } }', { mediaId: state.currentAnime.id, progress: nextProgress });
+    state.currentAnime.mediaListEntry = data.SaveMediaListEntry;
+    renderDetail();
+    toast(`AniList updated to episode ${nextProgress}.`);
+  } catch (error) { toast(`Could not update AniList: ${error.message}`, true); }
+}
+
 function renderDetail() {
   const anime = state.currentAnime, title = titleOf(anime), total = Number(anime.episodes) || '?', entries = anime.episodeEntries || [];
   const year = anime.startDate?.year || anime.seasonYear || '—', banner = anime.bannerImage || coverOf(anime), studios = (anime.studios?.nodes || []).map(studio => studio.name).join(', ');
   const progress = anime.mediaListEntry?.progress || 0, description = cleanDescription(anime.description) || 'No synopsis is available for this title.';
   document.getElementById('detail-content').innerHTML = `<div class="detail-hero"><img class="detail-banner-glow" src="${escapeAttribute(banner)}" alt=""><div class="detail-banner">${anime.bannerImage ? `<img src="${escapeAttribute(anime.bannerImage)}" alt="">` : ''}</div></div><div class="detail-layout"><img class="detail-poster" src="${escapeAttribute(coverOf(anime))}" alt="${escapeAttribute(title)}"><div class="detail-body"><p class="detail-romaji">${escapeHTML(anime.title.romaji || title)}</p><h1>${escapeHTML(anime.title.english || title)}</h1><p class="detail-subtitle">${escapeHTML(anime.title.native || '')}</p><div class="metadata"><span>${escapeHTML(anime.format || 'ANIME')}</span><span>${total} episodes</span>${anime.duration ? `<span>${anime.duration} min</span>` : ''}<span>${escapeHTML(anime.status || 'UNKNOWN')}</span><span>${year}</span>${anime.averageScore ? `<span>★ ${anime.averageScore}/100</span>` : ''}<span>${Number(anime.popularity || 0).toLocaleString()} users</span></div>${state.auth.viewer ? `<div class="anilist-progress"><span>AniList progress</span><strong>${progress} / ${total}</strong></div>` : ''}${studios ? `<p class="detail-fact"><b>Studio</b> ${escapeHTML(studios)}</p>` : ''}${anime.source ? `<p class="detail-fact"><b>Source</b> ${escapeHTML(anime.source.replace(/_/g, ' '))}${anime.countryOfOrigin ? ` · ${escapeHTML(anime.countryOfOrigin)}` : ''}</p>` : ''}<div class="genre-list">${(anime.genres || []).map(genre => `<span class="genre">${escapeHTML(genre)}</span>`).join('')}</div><div class="description">${escapeHTML(description)}</div><div class="external-links"><a href="https://anilist.co/anime/${anime.id}" target="_blank" rel="noreferrer">AniList ↗</a>${anime.idMal ? `<a href="https://myanimelist.net/anime/${anime.idMal}" target="_blank" rel="noreferrer">MyAnimeList ↗</a>` : ''}${anime.trailer?.site === 'youtube' ? `<a href="https://www.youtube.com/watch?v=${anime.trailer.id}" target="_blank" rel="noreferrer">Trailer ↗</a>` : ''}</div></div></div><section class="episode-list-section"><div class="episode-list-header"><div><h2>Episodes</h2><p>${entries.length ? `${entries.length} released episode${entries.length === 1 ? '' : 's'} available to watch.` : 'No episodes are available yet.'}</p></div><button id="watch-first" class="button button-primary" type="button" ${entries.length ? '' : 'disabled'}>Watch now <span>→</span></button></div>${renderEpisodeToolbar(entries)}<div class="episode-list">${entries.map(entry => titleEpisodeRow(entry, progress)).join('') || '<div class="empty-state">AniList has not released an episode for this title yet.</div>'}</div><p class="episode-filter-empty" hidden>No episodes match your filter.</p></section>${relationsMarkup(anime)}`;
+  bindDetailAniListProgress();
   const section = document.querySelector('.episode-list-section');
   bindEpisodeFilter(section);
   section.querySelectorAll('[data-watch-episode]').forEach(button => button.addEventListener('click', () => openWatchPage(Number(button.dataset.watchEpisode))));
