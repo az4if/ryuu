@@ -756,7 +756,8 @@ async function runAnilistBrowse(reset = false) {
     b.page += 1;
     b.hasNext = hasNext;
     renderAnilistBrowseGrid(b.items);
-    document.getElementById('anilist-empty').hidden = b.items.length !== 0;
+    const emptyState = document.getElementById('anilist-empty');
+    emptyState.hidden = b.items.length !== 0;
   } catch (error) {
     if (requestId !== b.requestId) return;
     document.getElementById('anilist-grid').innerHTML = `<div class="empty-state">Could not load AniList results. ${escapeHTML(error.message)}</div>`;
@@ -770,6 +771,7 @@ async function runAnilistBrowse(reset = false) {
 }
 
 function renderAnilistBrowseGrid(list) {
-  if (!list.length) { document.getElementById('anilist-grid').innerHTML = ''; return; }
+  const grid = document.getElementById('anilist-grid');
+  if (!list.length) { grid.innerHTML = ''; return; }
   renderAnimeGrid('anilist-grid', list);
 }
