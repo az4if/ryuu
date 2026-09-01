@@ -10,6 +10,39 @@ document.addEventListener('click', event => {
   if (animeId) openAnime(animeId);
 });
 
+function routeHash(route) {
+  if (route === 'detail' && state.currentAnime?.id) return `#detail/${state.currentAnime.id}`;
+  if (route === 'watch' && state.currentAnime?.id) return `#watch/${state.currentAnime.id}/${state.currentEpisode}`;
+  return `#${route}`;
+}
+
+function syncRouteUrl(route) {
+  const hash = routeHash(route);
+  if (location.hash !== hash) history.pushState(null, '', hash);
+}
+
+function openUrlRoute() {
+  if (!location.hash) { syncRouteUrl('home'); return; }
+  const match = location.hash.match(/^#(home|anilist|settings|detail(?:\/(\d+))?|watch(?:\/(\d+)(?:\/(\d+))?)?)$/);
+  if (!match) return;
+  const route = match[1].split('/')[0];
+  if (route === 'detail' || route === 'watch') {
+    const animeId = Number(match[2] || match[3]);
+    if (!animeId) return;
+    openAnime(animeId).then(() => {
+      if (route === 'watch') openWatchPage(Number(match[4]) || 1);
+    });
+    return;
+  }
+  showRoute(route);
+}
+
+window.addEventListener('hashchange', openUrlRoute);
+window.addEventListener('popstate', openUrlRoute);
+window.addEventListener('DOMContentLoaded', () => {
+  if (!location.hash.includes('access_token=')) openUrlRoute();
+});
+
 /* Lucide icons (stroke-based, inherits color via currentColor) used in the anime-stats row. */
 const STAT_ICON_PATHS = {
   star: '<path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/>',
@@ -91,6 +124,7 @@ async function episodeEntries(anime) {
 
 async function openAnime(id) {
   state.returnRoute = state.route === 'detail' || state.route === 'watch' ? state.returnRoute : state.route;
+  state.currentAnime = null;
   showRoute('detail');
   document.getElementById('detail-content').innerHTML = detailSkeletonMarkup();
   const query = `query Detail($id: Int) { Media(id: $id, type: ANIME) { id idMal title { romaji english native userPreferred } coverImage { extraLarge large medium color } bannerImage description(asHtml: false) episodes duration format status season seasonYear averageScore popularity genres source countryOfOrigin synonyms startDate { year month day } endDate { year month day } trailer { id site thumbnail } nextAiringEpisode { episode airingAt } airingSchedule(notYetAired: false, perPage: 50) { nodes { episode airingAt } } streamingEpisodes { title thumbnail url site } mediaListEntry { id status progress score(format: POINT_10) } studios(isMain: true) { nodes { name } } relations { edges { relationType(version: 2) node { id type format status episodes seasonYear title { userPreferred } coverImage { medium } } } } } }`;
@@ -100,6 +134,7 @@ async function openAnime(id) {
     state.language = state.settings.defaultLanguage;
     state.source = state.settings.preferredSource;
     state.currentAnime.episodeEntries = await episodeEntries(state.currentAnime);
+    syncRouteUrl('detail');
     renderDetail();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   } catch (error) {
@@ -184,6 +219,7 @@ function openWatchPage(episode = state.currentEpisode) {
   if (!state.currentAnime) return;
   state.currentEpisode = episode;
   showRoute('watch');
+  syncRouteUrl('watch');
   renderWatchPage();
 }
 
@@ -227,6 +263,7 @@ function showRoute(route) {
   hideHoverCard();
   document.querySelectorAll('.view').forEach(view => view.classList.toggle('is-active', view.id === `${route}-view`));
   state.route = route;
+  if (route !== 'detail' && route !== 'watch' || state.currentAnime?.id) syncRouteUrl(route);
   if (route === 'anilist') initAnilistBrowse();
   window.scrollTo({ top: 0, behavior: state.settings.reducedMotion ? 'auto' : 'smooth' });
 }
