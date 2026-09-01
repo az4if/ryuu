@@ -284,3 +284,80 @@ button.episode-row:hover { transform: translateX(2px); }
 .search-result strong { overflow: hidden; color: #f1f0f3; font: 500 .7rem var(--mono); text-overflow: ellipsis; white-space: nowrap; }
 .search-result small { color: var(--dim); font: .6rem var(--mono); }
 
+
+/* AniList profile page: banner + avatar header, stat tiles, status shortcuts, and favourites. */
+.profile-view { padding-bottom: 90px; }
+.profile-hero { position: relative; isolation: isolate; width: 100%; }
+.profile-banner { position: relative; height: clamp(160px, 22vw, 260px); min-height: 160px; overflow: hidden; border-bottom: 1px solid var(--line-soft); background: linear-gradient(135deg, #232028, #16151a); }
+.profile-banner img { width: 100%; height: 100%; object-fit: cover; opacity: .85; }
+.profile-banner-empty { background: linear-gradient(135deg, #26212f, #17161b); }
+.profile-banner-glow { position: absolute; z-index: -1; inset: 12px 8% 0; width: 84%; height: 100%; object-fit: cover; opacity: .55; filter: blur(46px) brightness(.6) saturate(1.6); }
+.profile-header { width: min(1440px, calc(100% - 64px)); display: flex; align-items: flex-end; gap: 18px; margin: -46px auto 0; position: relative; z-index: 1; }
+.profile-avatar { width: 96px; height: 96px; border: 3px solid var(--bg); border-radius: 50%; object-fit: cover; background: var(--surface-2); box-shadow: 0 10px 26px #00000070; }
+.profile-header-copy { padding-bottom: 6px; }
+.profile-header-copy h1 { margin: 0; font-size: clamp(1.3rem, 2.4vw, 1.9rem); }
+.profile-anilist-link { display: inline-flex; align-items: center; gap: 5px; margin-top: 6px; color: var(--accent-bright); font: .68rem var(--mono); text-decoration: none; }
+.profile-anilist-link:hover { color: #fff; }
+.profile-anilist-link svg { width: 12px; height: 12px; }
+.profile-about { width: min(1440px, calc(100% - 64px)); margin: 18px auto 0; color: var(--muted); font: .72rem/1.7 var(--mono); white-space: pre-line; }
+.profile-stats-grid { width: min(1440px, calc(100% - 64px)); display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 28px auto 0; }
+.profile-stat { display: flex; align-items: center; gap: 12px; border: 1px solid #424249; background: var(--surface-2); padding: 14px 16px; }
+.profile-stat-icon { display: grid; flex: none; place-items: center; width: 36px; height: 36px; border: 1px solid #52525c; color: var(--accent-bright); background: #26242f; }
+.profile-stat-icon svg { width: 17px; height: 17px; }
+.profile-stat strong { display: block; color: #fff; font: 600 1.05rem var(--mono); }
+.profile-stat span { color: var(--dim); font: .64rem var(--mono); }
+.profile-section { width: min(1440px, calc(100% - 64px)); margin: 34px auto 0; }
+.profile-section-heading { margin-bottom: 14px; }
+.profile-section-heading .eyebrow { margin-bottom: 5px; }
+.profile-section-heading h2 { font: 500 1rem var(--mono); letter-spacing: 0; }
+.profile-status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+.profile-status-card { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; border: 1px solid #424249; background: #1c1c20; padding: 14px; color: #d9d7df; transition: border-color .16s ease, background .16s ease, transform .16s ease; }
+.profile-status-card svg { width: 16px; height: 16px; color: var(--accent-bright); }
+.profile-status-card strong { color: #fff; font: 600 1.1rem var(--mono); }
+.profile-status-card span { color: var(--dim); font: .63rem var(--mono); }
+.profile-status-card:hover { border-color: #867bd4; background: #24222d; transform: translateY(-2px); }
+.profile-genre-list { display: grid; gap: 9px; }
+.profile-genre-row { display: grid; grid-template-columns: 110px 1fr 30px; align-items: center; gap: 12px; }
+.profile-genre-row span { overflow: hidden; color: #d3d1d6; font: .66rem var(--mono); text-overflow: ellipsis; white-space: nowrap; }
+.profile-genre-track { height: 8px; border: 1px solid #424249; background: #1a1a1d; }
+.profile-genre-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-bright)); }
+.profile-genre-row small { color: var(--dim); font: .6rem var(--mono); text-align: right; }
+.profile-favourites { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+.profile-mylist-cta { display: flex; width: min(1440px, calc(100% - 64px)); justify-content: center; margin: 40px auto 0; text-decoration: none; }
+@media (max-width: 620px) { .profile-header { flex-direction: column; align-items: flex-start; gap: 8px; margin-top: -34px; }.profile-avatar { width: 76px; height: 76px; }.profile-genre-row { grid-template-columns: 84px 1fr 26px; gap: 8px; } }
+
+/* My List page: status tabs, filterable grid, and inline progress controls. */
+.mylist-view { padding-bottom: 90px; }
+.mylist-view .page-header { align-items: flex-start; flex-wrap: wrap; gap: 14px; }
+.mylist-view .page-header .button { flex: 0 0 auto; text-decoration: none; }
+.mylist-view .page-header .button svg { width: 12px; height: 12px; margin-left: 4px; }
+.mylist-tabs { width: min(1440px, calc(100% - 64px)); display: flex; flex-wrap: wrap; gap: 8px; margin: 0 auto 16px; }
+.mylist-tab { display: inline-flex; align-items: center; gap: 7px; border: 1px solid #45454d; background: #1e1e22; padding: 9px 12px; color: #c7c5cc; font: .66rem var(--mono); }
+.mylist-tab svg { width: 14px; height: 14px; }
+.mylist-tab b { color: inherit; font-weight: 600; opacity: .8; }
+.mylist-tab:hover { border-color: #6f6a95; background: #26242e; }
+.mylist-tab.is-active { border-color: var(--accent); background: var(--accent); color: #fff; }
+.mylist-filter-wrap { width: min(1440px, calc(100% - 64px)); margin: 0 auto 18px; max-width: 260px; }
+.mylist-filter-wrap .episode-filter { width: 100%; }
+.mylist-grid { width: min(1440px, calc(100% - 64px)); display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin: 0 auto; }
+.mylist-card { min-width: 0; cursor: pointer; border: 1px solid #3d3d43; background: var(--surface-2); overflow: hidden; transition: border-color .16s ease, transform .16s ease; }
+.mylist-card:hover { border-color: #9c95dc; transform: translateY(-3px); }
+.mylist-card.is-filtered-out { display: none; }
+.mylist-card-art { position: relative; aspect-ratio: 2/1.15; overflow: hidden; background: #24242a; }
+.mylist-card-art img { width: 100%; height: 100%; object-fit: cover; }
+.mylist-card-score { position: absolute; right: 6px; bottom: 6px; padding: 3px 5px; background: #111113d9; color: #f4d77d; font: .58rem var(--mono); }
+.mylist-card-info { padding: 10px 11px 12px; }
+.mylist-progress-row { display: flex; align-items: center; gap: 8px; margin: 8px 0 0; }
+.mylist-progress-track { flex: 1; height: 6px; border: 1px solid #45454d; background: #17171a; }
+.mylist-progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-bright)); }
+.mylist-progress-row span { flex: none; color: var(--dim); font: .6rem var(--mono); }
+.mylist-increment { display: inline-flex; align-items: center; gap: 5px; margin-top: 9px; border: 1px solid #6c63a8; background: #2c2740; padding: 6px 8px; color: #eeeafd; font: .6rem var(--mono); }
+.mylist-increment:hover { background: #3a3457; }
+.mylist-increment:disabled { opacity: .6; cursor: wait; }
+@media (max-width: 620px) { .mylist-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }.mylist-filter-wrap { max-width: none; } }
+
+/* Icons shared by the profile page, list tabs, and AniList dropdown. */
+.nav-icon { width: 14px; height: 14px; flex: none; }
+.anilist-dropdown button { display: flex; align-items: center; gap: 9px; }
+.anilist-dropdown button svg { width: 13px; height: 13px; flex: none; color: var(--dim); }
+.anilist-dropdown button:hover svg { color: inherit; }

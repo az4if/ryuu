@@ -312,7 +312,7 @@ function renderAniListDropdown() {
   const menu = document.getElementById('anilist-dropdown');
   const viewer = state.auth.viewer;
   if (!menu || !viewer) return;
-  menu.innerHTML = `<div class="anilist-dropdown-user">${viewer.avatar?.large ? `<img src="${escapeAttribute(viewer.avatar.large)}" alt="">` : ''}<span>${escapeHTML(viewer.name)}</span></div><div class="anilist-dropdown-divider"></div><button type="button" data-anilist-menu="list">My List</button><button class="is-danger" type="button" data-anilist-menu="logout">Logout</button>`;
+  menu.innerHTML = `<div class="anilist-dropdown-user">${viewer.avatar?.large ? `<img src="${escapeAttribute(viewer.avatar.large)}" alt="">` : ''}<span>${escapeHTML(viewer.name)}</span></div><div class="anilist-dropdown-divider"></div><button type="button" data-anilist-menu="profile">${navIcon('user')}<span>Profile</span></button><button type="button" data-anilist-menu="list">${navIcon('list')}<span>My List</span></button><div class="anilist-dropdown-divider"></div><button class="is-danger" type="button" data-anilist-menu="logout">${navIcon('log-out')}<span>Logout</span></button>`;
 }
 
 function updateAnilistUI() {
@@ -359,12 +359,8 @@ setupEvents = function() {
   document.addEventListener('click', event => {
     const action = event.target.closest('[data-anilist-menu]')?.dataset.anilistMenu;
     if (action === 'logout') { logoutAniList(); return; }
-    if (action === 'list') {
-      closeAniListDropdown();
-      const user = state.auth.viewer?.name;
-      if (user) window.open(`https://anilist.co/user/${encodeURIComponent(user)}/animelist`, '_blank', 'noopener');
-      return;
-    }
+    if (action === 'profile') { closeAniListDropdown(); openProfile(); return; }
+    if (action === 'list') { closeAniListDropdown(); openMyList(); return; }
     if (!event.target.closest('.anilist-menu')) closeAniListDropdown();
   });
 }
@@ -575,5 +571,153 @@ async function loadHome() {
     startTopAnimeAutoplay();
   } catch (error) {
     showNetworkError(['featured-carousel', 'top-airing-grid', 'popular-grid', 'airing-list'], error);
+  }
+}
+
+/* -------------------------------------------------------------------------------------------
+   AniList Profile & My List pages.
+   Two new in-app views reachable from the header AniList dropdown ("Profile" / "My List").
+   Icons below are inline Lucide paths (stroke-based, inherits color via currentColor), matching
+   the STAT_ICON_PATHS convention already used for the anime-stats row.
+------------------------------------------------------------------------------------------- */
+const NAV_ICON_PATHS = {
+  user: '<circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/>',
+  list: '<line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/>',
+  'log-out': '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>',
+  'external-link': '<path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>',
+  clock: '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+  'check-circle': '<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>',
+  'pause-circle': '<circle cx="12" cy="12" r="10"/><line x1="10" x2="10" y1="15" y2="9"/><line x1="14" x2="14" y1="15" y2="9"/>',
+  'circle-x': '<circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/>',
+  hourglass: '<path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/>',
+  play: '<polygon points="6 3 20 12 6 21 6 3"/>'
+};
+function navIcon(name, cls = '') {
+  return `<svg class="nav-icon ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${NAV_ICON_PATHS[name] || ''}</svg>`;
+}
+
+/* AniList's `about` field is raw markdown, not HTML — strip the common tokens rather than
+   running it through cleanDescription (which only understands HTML). */
+function cleanMarkdown(value = '') {
+  return String(value)
+    .replace(/```[\s\S]*?```/g, '')
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/[#*_>`~]/g, '')
+    .replace(/\r/g, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+const STATUS_META = {
+  CURRENT: { label: 'Watching', icon: 'play' },
+  COMPLETED: { label: 'Completed', icon: 'check-circle' },
+  PLANNING: { label: 'Planning', icon: 'hourglass' },
+  PAUSED: { label: 'Paused', icon: 'pause-circle' },
+  DROPPED: { label: 'Dropped', icon: 'circle-x' },
+  REPEATING: { label: 'Repeating', icon: 'list' }
+};
+const STATUS_ORDER = ['CURRENT', 'COMPLETED', 'PLANNING', 'PAUSED', 'DROPPED', 'REPEATING'];
+
+function statCard(iconName, label, value) {
+  return `<div class="profile-stat"><div class="profile-stat-icon">${navIcon(iconName)}</div><div><strong>${escapeHTML(String(value))}</strong><span>${escapeHTML(label)}</span></div></div>`;
+}
+
+function profileSkeletonMarkup() {
+  return `<div class="profile-hero"><div class="profile-banner profile-banner-empty loading-block"></div></div><div class="profile-header"><span class="profile-avatar" style="border:0"><span class="loading-block" style="display:block;width:100%;height:100%;border-radius:50%"></span></span></div><div class="profile-stats-grid">${'<div class="profile-stat loading-block"></div>'.repeat(4)}</div>`;
+}
+
+function mylistSkeletonMarkup() {
+  return `<div class="page-header"><div><p class="eyebrow">ANILIST</p><h1>My List</h1></div></div><div class="loading-block" style="min-height:340px"></div>`;
+}
+
+/* -------------------------- Profile -------------------------- */
+async function openProfile() {
+  if (!state.auth.token) { toast('Connect your AniList account first.', true); return; }
+  if (!['profile', 'mylist'].includes(state.route)) state.returnRoute = state.route;
+  showRoute('profile');
+  document.getElementById('profile-content').innerHTML = profileSkeletonMarkup();
+  const query = `query Profile { Viewer { id name about bannerImage avatar { large } favourites { anime(perPage: 12) { nodes { id title { romaji english native } coverImage { large medium } } } } statistics { anime { count meanScore minutesWatched episodesWatched statuses { status count } genres { genre count } } } } }`;
+  try {
+    const data = await anilist(query, {});
+    state.auth.viewer = { ...state.auth.viewer, ...data.Viewer };
+    renderProfile(data.Viewer);
+  } catch (error) {
+    document.getElementById('profile-content').innerHTML = `<div class="empty-state">Could not load your AniList profile. ${escapeHTML(error.message)}</div>`;
+  }
+}
+
+function renderProfile(viewer) {
+  const stats = viewer.statistics?.anime || {};
+  const statusCounts = {};
+  (stats.statuses || []).forEach(entry => { statusCounts[entry.status] = entry.count; });
+  const genres = [...(stats.genres || [])].sort((a, b) => b.count - a.count).slice(0, 6);
+  const topGenreCount = genres[0]?.count || 1;
+  const favourites = (viewer.favourites?.anime?.nodes || []).slice(0, 12);
+  const about = cleanMarkdown(viewer.about || '');
+  const banner = viewer.bannerImage || '';
+  document.getElementById('profile-content').innerHTML = `<div class="profile-hero">${banner ? `<img class="profile-banner-glow" src="${escapeAttribute(banner)}" alt=""><div class="profile-banner"><img src="${escapeAttribute(banner)}" alt=""></div>` : '<div class="profile-banner profile-banner-empty"></div>'}</div><div class="profile-header"><img class="profile-avatar" src="${escapeAttribute(viewer.avatar?.large || './assets/favicon.png')}" alt="${escapeAttribute(viewer.name)}"><div class="profile-header-copy"><h1>${escapeHTML(viewer.name)}</h1><a class="profile-anilist-link" href="https://anilist.co/user/${encodeURIComponent(viewer.name)}/" target="_blank" rel="noreferrer">View on AniList ${navIcon('external-link')}</a></div></div>${about ? `<p class="profile-about">${escapeHTML(about)}</p>` : ''}<div class="profile-stats-grid">${statCard('list', 'Total Anime', Number(stats.count || 0).toLocaleString())}${statCard('play', 'Episodes Watched', Number(stats.episodesWatched || 0).toLocaleString())}${statCard('clock', 'Days Watched', (Number(stats.minutesWatched || 0) / 60 / 24).toFixed(1))}${statCard('check-circle', 'Mean Score', stats.meanScore ? stats.meanScore.toFixed(1) : '—')}</div><div class="profile-section"><div class="profile-section-heading"><p class="eyebrow">ANILIST</p><h2>Your list</h2></div><div class="profile-status-grid">${STATUS_ORDER.map(key => `<button class="profile-status-card" type="button" data-open-mylist="${key}">${navIcon(STATUS_META[key].icon)}<strong>${statusCounts[key] || 0}</strong><span>${STATUS_META[key].label}</span></button>`).join('')}</div></div>${genres.length ? `<div class="profile-section"><div class="profile-section-heading"><p class="eyebrow">TASTE</p><h2>Top genres</h2></div><div class="profile-genre-list">${genres.map(g => `<div class="profile-genre-row"><span>${escapeHTML(g.genre)}</span><div class="profile-genre-track"><div class="profile-genre-fill" style="width:${Math.max(6, Math.round((g.count / topGenreCount) * 100))}%"></div></div><small>${g.count}</small></div>`).join('')}</div></div>` : ''}${favourites.length ? `<div class="profile-section"><div class="profile-section-heading"><p class="eyebrow">FAVOURITES</p><h2>Favourite anime</h2></div><div class="anime-grid profile-favourites">${favourites.map(anime => `<article class="anime-card" data-anime-id="${anime.id}" tabindex="0" role="button"><div class="anime-poster"><img src="${escapeAttribute(anime.coverImage?.large || anime.coverImage?.medium || './assets/favicon.png')}" alt="${escapeAttribute(anime.title?.english || anime.title?.romaji || '')}" loading="lazy"></div><div class="anime-card-info"><div class="anime-card-title">${escapeHTML(anime.title?.english || anime.title?.romaji || anime.title?.native || 'Untitled')}</div></div></article>`).join('')}</div></div>` : ''}<button class="button button-primary profile-mylist-cta" type="button" data-open-mylist="CURRENT">Open My List <span>→</span></button>`;
+  document.querySelectorAll('[data-open-mylist]').forEach(button => button.addEventListener('click', () => openMyList(button.dataset.openMylist)));
+}
+
+/* -------------------------- My List -------------------------- */
+async function openMyList(initialStatus) {
+  if (!state.auth.token) { toast('Connect your AniList account first.', true); return; }
+  if (!['profile', 'mylist'].includes(state.route)) state.returnRoute = state.route;
+  state.myListTab = initialStatus || state.myListTab || 'CURRENT';
+  showRoute('mylist');
+  document.getElementById('mylist-content').innerHTML = state.myList ? '' : mylistSkeletonMarkup();
+  if (state.myList) renderMyList();
+  await loadMyList();
+}
+
+async function loadMyList() {
+  if (!state.auth.viewer?.id) return;
+  const query = `query MyList($userId: Int) { MediaListCollection(userId: $userId, type: ANIME, sort: UPDATED_TIME_DESC, forceSingleCompletedList: true) { lists { isCustomList entries { id status progress score(format: POINT_10) updatedAt media { id idMal title { romaji english native } coverImage { large medium } episodes format status } } } } }`;
+  try {
+    const data = await anilist(query, { userId: state.auth.viewer.id });
+    const entries = (data.MediaListCollection.lists || []).filter(list => !list.isCustomList).flatMap(list => list.entries || []);
+    entries.forEach(entry => state.cardData.set(entry.media.id, entry.media));
+    state.myList = entries;
+    renderMyList();
+  } catch (error) {
+    document.getElementById('mylist-content').innerHTML = `<div class="empty-state">Could not load your list. ${escapeHTML(error.message)}</div>`;
+  }
+}
+
+function mylistCard(entry) {
+  const anime = entry.media, total = Number(anime.episodes) || 0;
+  const pct = total ? Math.min(100, Math.round((entry.progress / total) * 100)) : (entry.progress ? 100 : 0);
+  const canIncrement = entry.status === 'CURRENT' && (!total || entry.progress < total);
+  return `<article class="mylist-card" data-anime-id="${anime.id}" data-search="${escapeAttribute(titleOf(anime).toLowerCase())}" tabindex="0" role="button"><div class="mylist-card-art"><img src="${escapeAttribute(anime.coverImage?.large || anime.coverImage?.medium || './assets/favicon.png')}" alt="" loading="lazy">${entry.score ? `<span class="mylist-card-score">★ ${entry.score}</span>` : ''}</div><div class="mylist-card-info"><div class="anime-card-title">${escapeHTML(titleOf(anime))}</div><div class="mylist-progress-row"><div class="mylist-progress-track"><div class="mylist-progress-fill" style="width:${pct}%"></div></div><span>${entry.progress}${total ? ` / ${total}` : ''}</span></div>${canIncrement ? `<button class="mylist-increment" type="button" data-increment-id="${entry.id}" data-media-id="${anime.id}" data-progress="${entry.progress}">+1 Episode</button>` : ''}</div></article>`;
+}
+
+function renderMyList() {
+  const entries = state.myList || [];
+  const tab = state.myListTab || 'CURRENT';
+  const counts = {};
+  entries.forEach(entry => { counts[entry.status] = (counts[entry.status] || 0) + 1; });
+  const visible = entries.filter(entry => entry.status === tab);
+  const viewerName = state.auth.viewer?.name;
+  document.getElementById('mylist-content').innerHTML = `<div class="page-header"><div><p class="eyebrow">ANILIST</p><h1>My List</h1><p>${entries.length} title${entries.length === 1 ? '' : 's'} tracked on your AniList account.</p></div>${viewerName ? `<a class="button button-quiet" href="https://anilist.co/user/${encodeURIComponent(viewerName)}/animelist" target="_blank" rel="noreferrer">Open on AniList ${navIcon('external-link')}</a>` : ''}</div><div class="mylist-tabs">${STATUS_ORDER.map(key => `<button class="mylist-tab ${tab === key ? 'is-active' : ''}" type="button" data-mylist-tab="${key}">${navIcon(STATUS_META[key].icon)}<span>${STATUS_META[key].label}</span><b>${counts[key] || 0}</b></button>`).join('')}</div><div class="episode-filter-wrap mylist-filter-wrap"><input id="mylist-filter" class="episode-filter" type="search" placeholder="Filter this list" aria-label="Filter this list" autocomplete="off"><button class="filter-clear" type="button" aria-label="Clear filter" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div><div class="mylist-grid">${visible.length ? visible.map(mylistCard).join('') : `<div class="empty-state">No titles in ${escapeHTML(STATUS_META[tab].label)} yet.</div>`}</div><p class="episode-filter-empty" hidden>No titles match your filter.</p>`;
+  document.querySelectorAll('[data-mylist-tab]').forEach(button => button.addEventListener('click', () => { state.myListTab = button.dataset.mylistTab; renderMyList(); }));
+  bindEpisodeFilter(document.getElementById('mylist-content'));
+  document.querySelectorAll('[data-increment-id]').forEach(button => button.addEventListener('click', event => { event.preventDefault(); event.stopPropagation(); incrementListEntry(button); }));
+}
+
+async function incrementListEntry(button) {
+  const mediaId = Number(button.dataset.mediaId), progress = Number(button.dataset.progress) + 1;
+  button.disabled = true;
+  button.textContent = 'Saving…';
+  try {
+    const data = await anilist(`mutation SaveProgress($mediaId: Int, $progress: Int) { SaveMediaListEntry(mediaId: $mediaId, progress: $progress, status: CURRENT) { id progress status } }`, { mediaId, progress });
+    const entry = (state.myList || []).find(item => item.media.id === mediaId);
+    if (entry) { entry.progress = data.SaveMediaListEntry.progress; entry.status = data.SaveMediaListEntry.status; }
+    toast(`Progress updated to episode ${progress}.`);
+    renderMyList();
+  } catch (error) {
+    button.disabled = false;
+    button.textContent = '+1 Episode';
+    toast(`Could not update AniList: ${error.message}`, true);
   }
 }
