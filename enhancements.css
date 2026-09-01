@@ -259,6 +259,7 @@ button.episode-row:hover { transform: translateX(2px); }
 .airing-list .loading-line { min-height: 288px; }.airing-list .loading-line::after { position: absolute; inset: 18px; content: ''; background: repeating-linear-gradient(to bottom, #313137 0 45px, transparent 45px 57px); }
 .episode-list-section .loading-block,.watch-page .loading-block,#detail-content > .loading-block { min-height: 280px; }.episode-list-section .loading-block::after,.watch-page .loading-block::after,#detail-content > .loading-block::after { inset: 18px; background: repeating-linear-gradient(to bottom, #303036 0 62px, transparent 62px 74px); }
 .empty-state { min-height: 100px; }
+.empty-state[hidden] { display: none; }
 @keyframes ryuu-skeleton-shimmer { to { transform: translateX(100%); } }
 @media (hover: none) { .feature-shell > .slider-arrow { opacity: .82; pointer-events: auto; } }
 
