@@ -357,3 +357,156 @@ button.episode-row:hover { transform: translateX(2px); }
   .anilist-browse-toolbar { flex-wrap: wrap; }
   .anilist-browse-search { width: 100%; }
 }
+
+/* ============================================================
+   SITE PICKS SLIDESHOW
+   Follows the same visual pattern as the featured / top-airing
+   carousels: full-bleed banner, blurred glow layer, frosted
+   left panel. The eyebrow shows "SITE PICK #N" in accent colour.
+   ============================================================ */
+
+/* Section wrapper — full bleed, no heading */
+.site-picks-section {
+  width: 100%;
+  max-width: none;
+  margin-right: 0;
+  margin-left: 0;
+  padding-top: 0;
+}
+.site-picks-section > .section-heading { display: none; }
+
+/* Carousel shell */
+.site-picks-carousel { width: 100%; min-height: 288px; }
+.site-picks-carousel .loading-block { min-height: 288px; }
+.site-picks-carousel .loading-block::after {
+  inset: 0;
+  background: linear-gradient(90deg, #202024, #1c1c20 45%, #29292e 100%);
+}
+
+/* feature-shell reset: no padding (matches top-airing-carousel) */
+.site-picks-carousel .feature-shell { padding: 0; }
+
+/* Atmospheric glow layer */
+.site-picks-carousel .feature-glow {
+  position: absolute;
+  z-index: -1;
+  inset: 18px 5%;
+  width: 90%;
+  height: calc(100% - 18px);
+  object-fit: cover;
+  opacity: .48;
+  filter: blur(32px) brightness(.6) saturate(1.45);
+}
+
+/* Feature card */
+.site-picks-carousel .feature {
+  position: relative;
+  width: 100%;
+  max-width: none;
+  height: 288px;
+  overflow: hidden;
+  border: 0;
+  background: #141416;
+  cursor: pointer;
+}
+
+/* Bottom-up vignette so text stays readable */
+.site-picks-carousel .feature::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, #14141655, transparent 56%);
+}
+
+/* Frosted left panel */
+.site-picks-carousel .feature::after {
+  content: '';
+  position: absolute;
+  inset: 0 34% 0 0;
+  background: linear-gradient(90deg, #141416, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  mask-image: linear-gradient(90deg, #000 30%, transparent 60%);
+  -webkit-mask-image: linear-gradient(90deg, #000 30%, transparent 60%);
+}
+
+.site-picks-carousel .feature-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: .9;
+}
+
+/* Info panel (matches other carousels) */
+.site-picks-carousel .feature-info {
+  position: relative;
+  z-index: 1;
+  max-width: 530px;
+  padding: 34px max(32px, calc((100vw - 1440px) / 2 + 32px));
+}
+.site-picks-carousel .feature-info h2 {
+  max-width: min(530px, 100%);
+  font-size: clamp(1.3rem, 2.2vw, 1.9rem);
+}
+.site-picks-carousel .feature-native {
+  margin: 4px 0 15px;
+  color: #fff;
+  font-size: .66rem;
+}
+.site-picks-carousel .feature-desc {
+  display: -webkit-box;
+  width: min(330px, 100%);
+  overflow: hidden;
+  margin-bottom: 14px;
+  color: #d3d1d6;
+  font: .64rem/1.58 var(--mono);
+  letter-spacing: .01em;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+}
+.site-picks-carousel .anime-stats { margin-bottom: 0; }
+.site-picks-carousel .anime-stats span { font-size: .58rem; }
+
+/* "View title" button: visible here (unlike featured where it's hidden) */
+.site-picks-carousel .site-picks-view-btn {
+  margin-top: 16px;
+}
+
+/* ── Eyebrow label ── */
+.site-pick-eyebrow {
+  /* Override the default muted eyebrow colour with the site accent */
+  color: #a89fff !important;
+  letter-spacing: .14em !important;
+}
+
+/* ── Skeleton loading ── */
+.site-picks-carousel .loading-block { min-height: 288px; }
+
+/* ── Mobile ─────────────────────────────────────────────────── */
+@media (max-width: 620px) {
+  .site-picks-carousel,
+  .site-picks-carousel .feature {
+    min-height: 330px;
+    height: 330px;
+  }
+  .site-picks-carousel .feature-info { padding: 32px 24px; }
+  /* Remove frosted panel on narrow screens — full overlay instead */
+  .site-picks-carousel .feature::after {
+    inset: 0;
+    background: linear-gradient(90deg, #141416f8 0%, #141416c4 64%, #14141642 100%);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+}
+
+/* Touch devices: always show arrows (no hover state) */
+@media (hover: none) {
+  .site-picks-carousel .feature-shell > .slider-arrow {
+    opacity: .82;
+    pointer-events: auto;
+  }
+}

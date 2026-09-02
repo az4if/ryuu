@@ -2,9 +2,9 @@ const CONFIG=window.RYUU_CONFIG||{anilist:{clientId:0,redirectUrl:location.origi
 const API_URL=CONFIG.anilist.graphqlUrl;
 const PLAYER_SOURCES={megaplayAni:{label:'MegaPlay · AniList',build:(a,e,l)=>`https://megaplay.buzz/stream/ani/${a.id}/${e}/${l}`},megaplayMal:{label:'MegaPlay · MAL',build:(a,e,l)=>a.idMal?`https://megaplay.buzz/stream/mal/${a.idMal}/${e}/${l}`:null},anixoAni:{label:'AnixO · AniList',build:(a,e,l)=>`https://anixo.buzz/embed/ani/${a.id}/${e}/${l}?color=%237c5cfc`},megavidAni:{label:'MegaVid · AniList',build:(a,e,l,p)=>`https://megavid.buzz/ani/${a.id}/${e}/${l}?color=%237c5cfc&autoplay=${p}`},megavidMal:{label:'MegaVid · MAL',build:(a,e,l,p)=>a.idMal?`https://megavid.buzz/mal/${a.idMal}/${e}/${l}?color=%237c5cfc&autoplay=${p}`:null}};
 const DEFAULT_SETTINGS={glow:true,showHero:true,hideSiteBanner:false,hoverCards:true,reducedMotion:false,defaultLanguage:'sub',preferredSource:'megaplayAni',autoplay:true};
-const state={route:'home',returnRoute:'home',featured:[],featureIndex:0,featureTimer:null,hoverTimer:null,searchTimer:null,cardData:new Map(),currentAnime:null,currentEpisode:1,language:'sub',source:'megaplayAni',auth:{token:localStorage.getItem('ryuu-anilist-token')||'',viewer:null},settings:{...DEFAULT_SETTINGS}};
+const state={route:'home',returnRoute:'home',featured:[],featureIndex:0,featureTimer:null,sitePicksData:[],sitePicksIndex:0,sitePicksTimer:null,hoverTimer:null,searchTimer:null,cardData:new Map(),currentAnime:null,currentEpisode:1,language:'sub',source:'megaplayAni',auth:{token:localStorage.getItem('ryuu-anilist-token')||'',viewer:null},settings:{...DEFAULT_SETTINGS}};
 document.addEventListener('DOMContentLoaded',init);
-async function init(){state.settings={...DEFAULT_SETTINGS,...readStored('ryuu-settings',{})};state.language=state.settings.defaultLanguage;state.source=state.settings.preferredSource;consumeAnilistCallback();applySettings();setupEvents();setupHeroMotion();setupHeroWordsFill();registerServiceWorker();loadHome();renderSettings();if(state.auth.token)await loadAnilistViewer();updateAnilistUI()}
+async function init(){state.settings={...DEFAULT_SETTINGS,...readStored('ryuu-settings',{})};state.language=state.settings.defaultLanguage;state.source=state.settings.preferredSource;consumeAnilistCallback();applySettings();setupEvents();setupHeroMotion();setupHeroWordsFill();registerServiceWorker();loadSitePicks();loadHome();renderSettings();if(state.auth.token)await loadAnilistViewer();updateAnilistUI()}
 function setupEvents(){document.addEventListener('click',event=>{const auth=event.target.closest('[data-anilist-auth]');if(auth){toggleAnilistAuth();return}const route=event.target.closest('[data-route]')?.dataset.route;if(route){route==='back'?showRoute(state.returnRoute):showRoute(route);return}const result=event.target.closest('.search-result');if(result){closeSearchDropdown();document.getElementById('global-search').value='';openAnime(Number(result.dataset.animeId));return}const card=event.target.closest('[data-anime-id]');if(card)openAnime(Number(card.dataset.animeId))});const searchInput=document.getElementById('global-search');searchInput.addEventListener('focus',()=>openSearchDropdown());searchInput.addEventListener('input',()=>{clearTimeout(state.searchTimer);const term=searchInput.value.trim();state.searchTimer=setTimeout(()=>runHeaderSearch(term),320)});searchInput.addEventListener('keydown',event=>{if(event.key==='Enter')searchFromInput(searchInput.value.trim());if(event.key==='Escape'){searchInput.blur();closeSearchDropdown()}});document.addEventListener('click',event=>{if(!event.target.closest('.search-wrap'))closeSearchDropdown()});const featuredCarousel=document.getElementById('featured-carousel');if(featuredCarousel){featuredCarousel.addEventListener('mouseenter',stopFeatureAutoplay);featuredCarousel.addEventListener('mouseleave',startFeatureAutoplay)}document.addEventListener('keydown',event=>{if((event.metaKey||event.ctrlKey)&&event.key.toLowerCase()==='k'){event.preventDefault();searchInput.focus();searchInput.select()}if(event.key==='Escape'){hideHoverCard();closeSearchDropdown();showRoute('home')}if(state.route==='home'&&event.key==='ArrowLeft')cycleFeature(-1);if(state.route==='home'&&event.key==='ArrowRight')cycleFeature(1)})}
 function openSearchDropdown(){const dd=document.getElementById('search-dropdown');if(dd.innerHTML.trim())dd.hidden=false}
 function closeSearchDropdown(){const dd=document.getElementById('search-dropdown');dd.hidden=true;dd.innerHTML=''}
@@ -31,3 +31,206 @@ function episodeButton(entry){return `<button class="episode-button ${entry.numb
 function renderSettings(){const s=state.settings,cards=[['glow','Glow effect','Add a subtle atmospheric glow to banner images and featured artwork.'],['showHero','Show home hero','Keep the oversized Ryuu introduction at the top of the home page.'],['hoverCards','Hover detail cards','Show the Zenshin-style title details popup when hovering over anime cards.'],['reducedMotion','Reduce motion','Turn off carousel and interface animations.'],['autoplay','Autoplay in web player','Request autoplay when the selected provider supports it.']];document.getElementById('settings-content').innerHTML=`${anilistAccountMarkup()}${cards.map(([k,h,d])=>`<article class="setting-card"><div><h2>${h}</h2><p>${d}</p></div><input class="switch" type="checkbox" data-setting="${k}" ${s[k]?'checked':''} aria-label="${h}"></article>`).join('')}<article class="setting-card"><div><h2>Default audio</h2><p>Choose which language is preselected on a title page.</p></div><select class="setting-choice" data-setting="defaultLanguage"><option value="sub" ${s.defaultLanguage==='sub'?'selected':''}>Japanese · Sub</option><option value="dub" ${s.defaultLanguage==='dub'?'selected':''}>English · Dub</option></select></article><article class="setting-card"><div><h2>Preferred playback source</h2><p>This source is selected before you start an episode. You can always change it per title.</p></div><select class="setting-choice" data-setting="preferredSource">${Object.entries(PLAYER_SOURCES).map(([k,v])=>`<option value="${k}" ${s.preferredSource===k?'selected':''}>${v.label}</option>`).join('')}</select></article>`;document.querySelectorAll('[data-setting]').forEach(c=>c.addEventListener('change',()=>{state.settings[c.dataset.setting]=c.type==='checkbox'?c.checked:c.value;saveSettings();applySettings();toast('Settings saved.')}))}
 function applySettings(){document.documentElement.classList.toggle('reduced-motion',state.settings.reducedMotion);document.body.classList.toggle('no-glow',!state.settings.glow);document.getElementById('landing-hero')?.toggleAttribute('hidden',!state.settings.showHero);if(!state.settings.hoverCards)hideHoverCard();if(state.settings.reducedMotion)stopFeatureAutoplay();else if(state.featured.length)startFeatureAutoplay()}function saveSettings(){localStorage.setItem('ryuu-settings',JSON.stringify(state.settings))}function showRoute(route){hideHoverCard();document.querySelectorAll('.view').forEach(v=>v.classList.toggle('is-active',v.id===`${route}-view`));state.route=route;window.scrollTo({top:0,behavior:state.settings.reducedMotion?'auto':'smooth'})}
 async function anilist(query,variables){const headers={'Content-Type':'application/json',Accept:'application/json'};if(state.auth.token)headers.Authorization=`Bearer ${state.auth.token}`;const response=await fetch(API_URL,{method:'POST',headers,body:JSON.stringify({query,variables})});const payload=await response.json();if(!response.ok||payload.errors)throw new Error(payload.errors?.[0]?.message||'AniList request failed');return payload.data}function episodeEntries(anime){const total=Math.max(Number(anime.episodes)||0,...(anime.streamingEpisodes||[]).map((episode,index)=>Number((episode.title||'').match(/\d+(?:\.\d+)?/)?.[0])||index+1),1);const mapped=new Map();(anime.streamingEpisodes||[]).forEach((episode,index)=>{const number=Number((episode.title||'').match(/\d+(?:\.\d+)?/)?.[0])||index+1;mapped.set(number,{number,title:episode.title||`Episode ${number}`,mapped:true,thumbnail:episode.thumbnail||''})});return Array.from({length:total},(_,index)=>mapped.get(index+1)||{number:index+1,title:`Episode ${index+1}`,mapped:false})}function anilistAccountMarkup(){const viewer=state.auth.viewer;if(!viewer)return `<article class="setting-card anilist-account"><div><h2>AniList account</h2><p>Connect to show your progress and mark completed episodes from Ryuu.</p></div><button class="button button-primary" data-anilist-auth type="button">Connect AniList</button></article>`;const stats=viewer.statistics?.anime;return `<article class="setting-card anilist-account"><div class="anilist-user">${viewer.avatar?.large?`<img src="${escapeAttribute(viewer.avatar.large)}" alt="">`:''}<div><h2>${escapeHTML(viewer.name)}</h2><p>AniList connected · ${stats?.episodesWatched||0} episodes watched · ${stats?.minutesWatched||0} minutes watched</p></div></div><button class="button button-quiet" data-anilist-auth type="button">Disconnect</button></article>`}function relationsMarkup(anime){const relations=(anime.relations?.edges||[]).filter(edge=>edge.node?.type==='ANIME').slice(0,8);if(!relations.length)return'';return `<section class="relations-section"><div class="relations-heading"><p class="eyebrow">ANILIST</p><h2>Related anime</h2></div><div class="relations-grid">${relations.map(edge=>`<article class="relation-card" data-anime-id="${edge.node.id}" role="button" tabindex="0"><img src="${escapeAttribute(edge.node.coverImage?.medium||'./assets/favicon.png')}" alt=""><div><span>${escapeHTML(edge.relationType.replace(/_/g,' '))}</span><strong>${escapeHTML(edge.node.title.userPreferred||'Untitled')}</strong><small>${escapeHTML(edge.node.format||'ANIME')} · ${edge.node.episodes||'?'} eps ${edge.node.seasonYear?`· ${edge.node.seasonYear}`:''}</small></div></article>`).join('')}</div></section>`}function titleOf(a){return a.title?.english||a.title?.romaji||a.title?.native||'Untitled'}function coverOf(a){return a.coverImage?.extraLarge||a.coverImage?.large||a.coverImage?.medium||'./assets/favicon.png'}function trimText(t,l){const clean=(t||'').replace(/\s+/g,' ').trim();return clean.slice(0,l)+(clean.length>l?'…':'')}function escapeHTML(v=''){return String(v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}function escapeAttribute(v=''){return escapeHTML(v)}function statsMarkup(a){return `<div class="anime-stats"><span>${a.episodes||'?'} EPS</span><span>★ ${a.averageScore||'—'}</span><span>${Number(a.popularity||0).toLocaleString()} USERS</span></div>`}function readStored(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}}function toast(m,error=false){const r=document.getElementById('toast-region'),i=document.createElement('div');i.className=`toast ${error?'error':''}`;i.textContent=m;r.appendChild(i);setTimeout(()=>i.remove(),3800)}function showNetworkError(ids,error){ids.forEach(id=>{const n=document.getElementById(id);if(n)n.innerHTML=`<div class="empty-state">Could not load AniList data. ${escapeHTML(error.message)}</div>`})}function registerServiceWorker(){if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}))}
+
+// ============================================================
+//  RYUU · SITE PICKS SLIDESHOW
+//  Cache: localStorage key + 7-week TTL.
+//  Config: window.RYUU_SITE_PICKS (site-picks.js).
+// ============================================================
+
+const SITE_PICKS_CACHE_KEY = 'ryuu-site-picks-cache';
+const SITE_PICKS_TTL = 7 * 7 * 24 * 60 * 60 * 1000; // 7 weeks
+
+// ── Setup ────────────────────────────────────────────────────
+function setupSitePicksHover() {
+  const section = document.getElementById('site-picks-section');
+  if (!section) return;
+  section.addEventListener('mouseenter', stopSitePickAutoplay);
+  section.addEventListener('mouseleave', () => { if (state.sitePicksData.length) startSitePickAutoplay(); });
+}
+
+// Watch for reduced-motion toggle in settings
+new MutationObserver(() => {
+  if (state.settings && state.settings.reducedMotion) {
+    stopSitePickAutoplay();
+  } else if (state.sitePicksData.length) {
+    startSitePickAutoplay();
+  }
+}).observe(document.documentElement, { attributeFilter: ['class'] });
+
+// ── Load ─────────────────────────────────────────────────────
+async function loadSitePicks() {
+  const config = window.RYUU_SITE_PICKS;
+  if (!config || !Array.isArray(config.primaryIds) || !config.primaryIds.length) return;
+
+  setupSitePicksHover();
+
+  const now = Date.now();
+  const cacheVersion = config.cacheVersion ?? 1;
+  let cached = null;
+
+  try {
+    const raw = localStorage.getItem(SITE_PICKS_CACHE_KEY);
+    if (raw) cached = JSON.parse(raw);
+  } catch { /* corrupt cache — ignore */ }
+
+  // Serve from cache if fresh and version matches
+  const cacheAge = cached ? now - (cached.timestamp || 0) : Infinity;
+  const versionMatch = cached && cached.cacheVersion === cacheVersion;
+
+  if (cached && versionMatch && cacheAge < SITE_PICKS_TTL && Array.isArray(cached.data) && cached.data.length) {
+    state.sitePicksData = cached.data;
+    renderSitePickCarousel();
+    startSitePickAutoplay();
+    return;
+  }
+
+  // Cache stale / missing / version bumped — fetch fresh data
+  const picks = await buildSitePicksList(config.primaryIds, config.fallbackIds || []);
+
+  if (picks.length) {
+    try {
+      localStorage.setItem(SITE_PICKS_CACHE_KEY, JSON.stringify({
+        timestamp: now,
+        cacheVersion,
+        data: picks,
+      }));
+    } catch { /* storage full — skip caching */ }
+
+    state.sitePicksData = picks;
+    renderSitePickCarousel();
+    startSitePickAutoplay();
+  } else if (cached && Array.isArray(cached.data) && cached.data.length) {
+    // Network failed — fall back to stale cache rather than showing nothing
+    state.sitePicksData = cached.data;
+    renderSitePickCarousel();
+    startSitePickAutoplay();
+  }
+}
+
+// ── Fetch helpers ─────────────────────────────────────────────
+async function fetchSitePicksByIds(ids) {
+  if (!ids || !ids.length) return [];
+  const query = `
+    query SitePicks($ids: [Int]) {
+      Page(perPage: 20) {
+        media(type: ANIME, id_in: $ids, isAdult: false) {
+          id idMal
+          title { romaji english native }
+          coverImage { extraLarge large medium color }
+          bannerImage
+          description(asHtml: false)
+          episodes format status season seasonYear
+          averageScore popularity genres
+          startDate { year month day }
+          trailer { id site thumbnail }
+          nextAiringEpisode { episode airingAt }
+        }
+      }
+    }
+  `;
+  try {
+    const data = await anilist(query, { ids });
+    return data.Page.media || [];
+  } catch {
+    return [];
+  }
+}
+
+async function buildSitePicksList(primaryIds, fallbackIds) {
+  // Fetch all primary IDs in one batch
+  const primary = await fetchSitePicksByIds(primaryIds);
+
+  // Index by id so we can preserve the config order and detect gaps
+  const byId = new Map(primary.map(a => [a.id, a]));
+
+  // Build ordered list, skipping IDs that returned nothing
+  let picks = primaryIds.map(id => byId.get(id)).filter(Boolean);
+
+  // If we're short, use up to 5 fallbacks to fill gaps
+  const gap = primaryIds.length - picks.length;
+  if (gap > 0 && fallbackIds.length) {
+    // Only fetch fallbacks not already in primary results
+    const needed = fallbackIds.filter(id => !byId.has(id)).slice(0, Math.min(gap, 5));
+    if (needed.length) {
+      const fb = await fetchSitePicksByIds(needed);
+      picks = [...picks, ...fb].slice(0, primaryIds.length);
+    }
+  }
+
+  return picks;
+}
+
+// ── Render ────────────────────────────────────────────────────
+function renderSitePickCarousel() {
+  const container = document.getElementById('site-picks-carousel');
+  if (!container) return;
+
+  const data = state.sitePicksData;
+  if (!data.length) {
+    container.innerHTML = '<div class="empty-state">No site picks available.</div>';
+    return;
+  }
+
+  const anime = data[state.sitePicksIndex];
+  if (!anime) return;
+
+  const title = titleOf(anime);
+  const backdrop = anime.bannerImage || coverOf(anime);
+  const total = data.length;
+  const pickNum = state.sitePicksIndex + 1;
+
+  // Store for hover cards
+  state.cardData.set(anime.id, anime);
+
+  container.innerHTML = `
+    <div class="feature-shell">
+      <img class="feature-glow" src="${escapeAttribute(backdrop)}" alt="">
+      <article class="feature feature-enter site-picks-feature" data-anime-id="${anime.id}" role="button" tabindex="0">
+        <img class="feature-backdrop" src="${escapeAttribute(backdrop)}" alt="">
+        <div class="feature-info">
+          <p class="eyebrow site-pick-eyebrow">SITE PICK #${pickNum}</p>
+          <h2>${escapeHTML(title)}</h2>
+          <p class="feature-native">${escapeHTML(anime.title.native || anime.title.romaji || '')}</p>
+          <p class="feature-desc">${escapeHTML(trimText(anime.description, 250) || 'No synopsis available.')}</p>
+          ${statsMarkup(anime)}
+          <button class="button button-primary site-picks-view-btn" type="button">View title <span>→</span></button>
+        </div>
+      </article>
+      <button class="slider-arrow slider-arrow-prev sp-prev" aria-label="Previous site pick" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <button class="slider-arrow slider-arrow-next sp-next" aria-label="Next site pick" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+      <span class="slide-position">${pickNum} / ${total}</span>
+    </div>
+  `;
+
+  // Wire up clicks
+  container.querySelector('.site-picks-feature').addEventListener('click', () => openAnime(anime.id));
+  container.querySelector('.site-picks-view-btn').addEventListener('click', e => { e.stopPropagation(); openAnime(anime.id); });
+  container.querySelector('.sp-prev').addEventListener('click', e => { e.stopPropagation(); stopSitePickAutoplay(); cycleSitePick(-1); startSitePickAutoplay(); });
+  container.querySelector('.sp-next').addEventListener('click', e => { e.stopPropagation(); stopSitePickAutoplay(); cycleSitePick(1);  startSitePickAutoplay(); });
+}
+
+// ── Cycle / autoplay ─────────────────────────────────────────
+function cycleSitePick(direction) {
+  if (!state.sitePicksData.length) return;
+  state.sitePicksIndex = (state.sitePicksIndex + direction + state.sitePicksData.length) % state.sitePicksData.length;
+  renderSitePickCarousel();
+}
+
+function startSitePickAutoplay() {
+  stopSitePickAutoplay();
+  if (!state.settings.reducedMotion && state.sitePicksData.length) {
+    state.sitePicksTimer = setInterval(() => cycleSitePick(1), 6000);
+  }
+}
+
+function stopSitePickAutoplay() {
+  if (state.sitePicksTimer) {
+    clearInterval(state.sitePicksTimer);
+    state.sitePicksTimer = null;
+  }
+}
