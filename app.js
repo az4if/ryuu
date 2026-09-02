@@ -194,7 +194,6 @@ function renderSitePickCarousel() {
           <p class="feature-native">${escapeHTML(anime.title.native || anime.title.romaji || '')}</p>
           <p class="feature-desc">${escapeHTML(trimText(anime.description, 250) || 'No synopsis available.')}</p>
           ${statsMarkup(anime)}
-          <button class="button button-primary site-picks-view-btn" type="button">View title <span>→</span></button>
         </div>
       </article>
       <button class="slider-arrow slider-arrow-prev sp-prev" aria-label="Previous site pick" type="button">
@@ -209,7 +208,6 @@ function renderSitePickCarousel() {
 
   // Wire up clicks
   container.querySelector('.site-picks-feature').addEventListener('click', () => openAnime(anime.id));
-  container.querySelector('.site-picks-view-btn').addEventListener('click', e => { e.stopPropagation(); openAnime(anime.id); });
   container.querySelector('.sp-prev').addEventListener('click', e => { e.stopPropagation(); stopSitePickAutoplay(); cycleSitePick(-1); startSitePickAutoplay(); });
   container.querySelector('.sp-next').addEventListener('click', e => { e.stopPropagation(); stopSitePickAutoplay(); cycleSitePick(1);  startSitePickAutoplay(); });
 }

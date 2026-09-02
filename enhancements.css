@@ -469,11 +469,6 @@ button.episode-row:hover { transform: translateX(2px); }
 .site-picks-carousel .anime-stats { margin-bottom: 0; }
 .site-picks-carousel .anime-stats span { font-size: .58rem; }
 
-/* "View title" button: visible here (unlike featured where it's hidden) */
-.site-picks-carousel .site-picks-view-btn {
-  margin-top: 16px;
-}
-
 /* ── Eyebrow label ── */
 .site-pick-eyebrow {
   /* Override the default muted eyebrow colour with the site accent */
