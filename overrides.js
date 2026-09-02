@@ -443,8 +443,8 @@ function applySettings() {
   document.getElementById('landing-hero')?.toggleAttribute('hidden', !state.settings.showHero || Boolean(state.settings.hideSiteBanner));
   if (state.airing) renderAiring(state.airing);
   if (!state.settings.hoverCards) hideHoverCard();
-  if (state.settings.reducedMotion) { stopFeatureAutoplay(); stopTopAnimeAutoplay(); }
-  else { if (state.featured.length) startFeatureAutoplay(); if ((state.topAnime || []).length) startTopAnimeAutoplay(); }
+  if (state.settings.reducedMotion) { stopFeatureAutoplay(); stopTopAnimeAutoplay(); stopTopAiringAutoplay(); }
+  else { if (state.featured.length) startFeatureAutoplay(); if ((state.topAnime || []).length) startTopAnimeAutoplay(); if ((state.topAiring || []).length) startTopAiringAutoplay(); }
 }
 
 /* Electron-style preferences: a quiet title rail and simple filled setting rows. */
@@ -686,6 +686,19 @@ function renderTopAiringCarousel() {
   });
 }
 
+function stopTopAiringAutoplay() {
+  if (state.topAiringTimer) { clearInterval(state.topAiringTimer); state.topAiringTimer = null; }
+}
+
+function startTopAiringAutoplay() {
+  stopTopAiringAutoplay();
+  if (!state.settings.reducedMotion && (state.topAiring || []).length > 1) state.topAiringTimer = setInterval(() => {
+    const slides = state.topAiring.slice(0, 8);
+    state.topAiringIndex = ((state.topAiringIndex || 0) + 1) % slides.length;
+    renderTopAiringCarousel();
+  }, 5200);
+}
+
 function renderTopAnime() {
   renderTopAnimeCarousel();
   renderAnimeGrid('popular-grid', state.topAnime || []);
@@ -743,6 +756,7 @@ async function loadHome() {
     state.topAnimeHasNext = data.popular.pageInfo.hasNextPage;
     state.topAnimeLoading = false;
     renderTopAiringCarousel();
+    startTopAiringAutoplay();
     renderAnimeGrid('top-airing-grid', data.airing.media);
     renderTopAnime();
     renderAiring(data.airing.media.slice(0, 5));
