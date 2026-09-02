@@ -633,19 +633,19 @@ function bindSliderControls(container, onStep) {
   }));
 }
 
-function sliderContent(anime, label = '') {
+function sliderContent(anime) {
   const backdrop = anime.bannerImage || coverOf(anime);
   const romaji = anime.title.romaji || titleOf(anime);
   const english = anime.title.english || anime.title.native || '';
   const stats = `<div class="anime-stats"><span>${anime.episodes || '?'} EPS</span>${anime.averageScore ? `<span>${statIcon('star')} ${anime.averageScore}</span>` : ''}<span>${statIcon('user-round')} ${Number(anime.popularity || 0).toLocaleString()}</span><span>${statIcon('tv')} ${escapeHTML((anime.format || 'ANIME').slice(0, 3))}</span></div>`;
-  return `<img class="feature-glow" src="${escapeAttribute(backdrop)}" alt=""><article class="feature feature-enter" data-anime-id="${anime.id}" role="button" tabindex="0"><img class="feature-backdrop" src="${escapeAttribute(backdrop)}" alt=""><div class="feature-info">${label ? `<p class="eyebrow">${escapeHTML(label)}</p>` : ''}<h2>${escapeHTML(romaji)}</h2><p class="feature-native">${escapeHTML(english)}</p><p class="feature-desc">${escapeHTML(trimText(anime.description, 360) || 'No synopsis available.')}</p>${stats}</div></article>`;
+  return `<img class="feature-glow" src="${escapeAttribute(backdrop)}" alt=""><article class="feature feature-enter" data-anime-id="${anime.id}" role="button" tabindex="0"><img class="feature-backdrop" src="${escapeAttribute(backdrop)}" alt=""><div class="feature-info"><h2>${escapeHTML(romaji)}</h2><p class="feature-native">${escapeHTML(english)}</p><p class="feature-desc">${escapeHTML(trimText(anime.description, 360) || 'No synopsis available.')}</p>${stats}</div></article>`;
 }
 
 function renderFeatured() {
   const container = document.getElementById('featured-carousel');
   const anime = state.featured[state.featureIndex];
   if (!anime) { container.innerHTML = '<div class="empty-state">No seasonal anime found.</div>'; return; }
-  container.innerHTML = `<div class="feature-shell">${sliderContent(anime, `Site Pick #${state.featureIndex + 1}`)}${sliderControls('featured', state.featureIndex, state.featured.length)}</div>`;
+  container.innerHTML = `<div class="feature-shell">${sliderContent(anime)}${sliderControls('featured', state.featureIndex, state.featured.length)}</div>`;
   bindSliderControls(container, cycleFeature);
 }
 
@@ -743,26 +743,10 @@ async function loadHome() {
   document.getElementById('top-anime-carousel').innerHTML = sliderSkeletonMarkup();
   document.getElementById('popular-grid').innerHTML = gridSkeletonMarkup(24);
   document.getElementById('airing-list').innerHTML = '';
-  const pickConfig = window.RYUU_SITE_PICKS || { primary: [], fallback: [] };
-  const primaryIds = [...new Set((pickConfig.primary || []).map(Number).filter(Number.isInteger))].slice(0, 8);
-  const fallbackIds = [...new Set((pickConfig.fallback || []).map(Number).filter(Number.isInteger))].slice(0, 5);
-  const pickIds = [...new Set([...primaryIds, ...fallbackIds])];
-  const pickCacheKey = `ryuu-site-picks:${pickIds.join(',')}`;
-  const pickCacheAge = 7 * 7 * 24 * 60 * 60 * 1000;
-  const pickQuery = `query SitePicks($ids: [Int]) { Page(perPage: 13) { media(id_in: $ids, type: ANIME, isAdult: false) { ...AnimeCard } } }`;
   const query = `query Home($year: Int) { seasonal: Page(perPage: 8) { media(type: ANIME, sort: POPULARITY_DESC, status: RELEASING, season: ${current.season}, seasonYear: $year, isAdult: false) { ...AnimeCard } } airing: Page(perPage: 50) { media(type: ANIME, sort: POPULARITY_DESC, status: RELEASING, isAdult: false) { ...AnimeCard } } popular: Page(page: 1, perPage: 24) { pageInfo { hasNextPage } media(type: ANIME, sort: POPULARITY_DESC, isAdult: false) { ...AnimeCard } } } fragment AnimeCard on Media { id idMal title { romaji english native } coverImage { extraLarge large medium color } bannerImage description(asHtml: false) episodes format status season seasonYear averageScore popularity genres startDate { year month day } trailer { id site thumbnail } nextAiringEpisode { episode airingAt } }`;
   try {
-    const cached = readStored(pickCacheKey, null);
-    let sitePicks = cached && Date.now() - cached.savedAt < pickCacheAge ? cached.items : null;
-    if (!sitePicks) {
-      if (cached) localStorage.removeItem(pickCacheKey);
-      const pickData = pickIds.length ? await anilist(pickQuery, { ids: pickIds }) : { Page: { media: [] } };
-      const byId = new Map(pickData.Page.media.map(anime => [anime.id, anime]));
-      sitePicks = [...primaryIds, ...fallbackIds].map(id => byId.get(id)).filter(Boolean).slice(0, 8);
-      localStorage.setItem(pickCacheKey, JSON.stringify({ savedAt: Date.now(), items: sitePicks }));
-    }
     const data = await anilist(query, { year: current.year });
-    state.featured = sitePicks;
+    state.featured = [...data.seasonal.media, ...data.airing.media.filter(anime => !data.seasonal.media.some(seasonal => seasonal.id === anime.id))].slice(0, 8);
     state.topAiring = data.airing.media;
     state.topAiringIndex = 0;
     state.featureIndex = 0;
