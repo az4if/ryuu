@@ -674,6 +674,18 @@ function renderTopAnimeCarousel() {
   bindSliderControls(container, cycleTopAnime);
 }
 
+function renderTopAiringCarousel() {
+  const container = document.getElementById('top-airing-carousel');
+  const slides = (state.topAiring || []).slice(0, 8);
+  if (!container || !slides.length) return;
+  state.topAiringIndex = Math.min(state.topAiringIndex || 0, slides.length - 1);
+  container.innerHTML = `<div class="feature-shell">${sliderContent(slides[state.topAiringIndex])}${sliderControls('top-airing', state.topAiringIndex, slides.length)}</div>`;
+  bindSliderControls(container, direction => {
+    state.topAiringIndex = ((state.topAiringIndex || 0) + direction + slides.length) % slides.length;
+    renderTopAiringCarousel();
+  });
+}
+
 function renderTopAnime() {
   renderTopAnimeCarousel();
   renderAnimeGrid('popular-grid', state.topAnime || []);
@@ -714,6 +726,7 @@ async function loadMoreTopAnime() {
 async function loadHome() {
   const current = currentAniListSeason();
   document.getElementById('featured-carousel').innerHTML = sliderSkeletonMarkup();
+  document.getElementById('top-airing-carousel').innerHTML = sliderSkeletonMarkup();
   document.getElementById('top-airing-grid').innerHTML = gridSkeletonMarkup(50);
   document.getElementById('top-anime-carousel').innerHTML = sliderSkeletonMarkup();
   document.getElementById('popular-grid').innerHTML = gridSkeletonMarkup(24);
@@ -722,6 +735,8 @@ async function loadHome() {
   try {
     const data = await anilist(query, { year: current.year });
     state.featured = [...data.seasonal.media, ...data.airing.media.filter(anime => !data.seasonal.media.some(seasonal => seasonal.id === anime.id))].slice(0, 8);
+    state.topAiring = data.airing.media;
+    state.topAiringIndex = 0;
     state.featureIndex = 0;
     state.topAnime = data.popular.media;
     state.topAnimeIndex = 0;
@@ -729,6 +744,7 @@ async function loadHome() {
     state.topAnimeHasNext = data.popular.pageInfo.hasNextPage;
     state.topAnimeLoading = false;
     renderFeatured();
+    renderTopAiringCarousel();
     renderAnimeGrid('top-airing-grid', data.airing.media);
     renderTopAnime();
     renderAiring(data.airing.media.slice(0, 5));
@@ -736,7 +752,7 @@ async function loadHome() {
     startFeatureAutoplay();
     startTopAnimeAutoplay();
   } catch (error) {
-    showNetworkError(['featured-carousel', 'top-airing-grid', 'popular-grid', 'airing-list'], error);
+    showNetworkError(['featured-carousel', 'top-airing-carousel', 'top-airing-grid', 'popular-grid', 'airing-list'], error);
   }
 }
 
