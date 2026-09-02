@@ -18,8 +18,8 @@ document.addEventListener('click', event => {
   if (animeId) openAnime(animeId);
 });
 
-const HOVER_ANILIST_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M24 17.53v2.421c0 .71-.391 1.101-1.1 1.101h-5l-.057-.165L11.84 3.736c.106-.502.46-.788 1.053-.788h2.422c.71 0 1.1.391 1.1 1.1v12.38H22.9c.71 0 1.1.392 1.1 1.101zM11.034 2.947l6.337 18.104h-4.918l-1.052-3.131H6.019l-1.077 3.131H0L6.361 2.948h4.673zm-.66 10.96l-1.69-5.014-1.541 5.015h3.23z"/></svg>';
-const HOVER_YOUTUBE_ICON = '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M43.112 14.394a5 5 0 0 0-3.533-3.533c-2.314-.894-24.732-1.332-31.236.025A5 5 0 0 0 4.81 14.42c-1.045 4.583-1.124 14.491.026 19.177a5 5 0 0 0 3.533 3.533c4.583 1.055 26.371 1.203 31.236 0a5 5 0 0 0 3.533-3.533c1.114-4.993 1.193-14.287-.026-19.203"/><path d="m30.567 23.995-10.447-5.991v11.982Z"/></svg>';
+const HOVER_ANILIST_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#02a9ff" d="M24 17.53v2.421c0 .71-.391 1.101-1.1 1.101h-5l-.057-.165L11.84 3.736c.106-.502.46-.788 1.053-.788h2.422c.71 0 1.1.391 1.1 1.1v12.38H22.9c.71 0 1.1.392 1.1 1.101zM11.034 2.947l6.337 18.104h-4.918l-1.052-3.131H6.019l-1.077 3.131H0L6.361 2.948h4.673zm-.66 10.96l-1.69-5.014-1.541 5.015h3.23z"/></svg>';
+const HOVER_YOUTUBE_ICON = '<svg viewBox="0 0 512 512" aria-hidden="true"><path fill="red" d="M501.3 132.8c-5.9-22-23.2-39.4-45.3-45.3c-39.9-10.7-200-10.7-200-10.7s-160.1 0-200 10.7c-22 5.9-39.4 23.2-45.3 45.3C0 172.7 0 256 0 256s0 83.3 10.7 123.2c5.9 22 23.2 39.4 45.3 45.3c39.9 10.7 200 10.7 200 10.7s160.1 0 200-10.7c22-5.9 39.4-23.2 45.3-45.3C512 339.3 512 256 512 256s0-83.3-10.7-123.2"/><path fill="#fff" d="m204.8 332.8l133-76.8l-133-76.8z"/></svg>';
 const HOVER_CHEVRON_UP = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m18 15-6-6-6 6"/></svg>';
 const HOVER_ANILIST_STATUSES = [['PLANNING', 'Planning'], ['CURRENT', 'Current'], ['PAUSED', 'Paused'], ['COMPLETED', 'Completed'], ['DROPPED', 'Dropped'], ['REPEATING', 'Repeating']];
 
