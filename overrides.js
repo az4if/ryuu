@@ -725,7 +725,6 @@ async function loadMoreTopAnime() {
 
 async function loadHome() {
   const current = currentAniListSeason();
-  document.getElementById('featured-carousel').innerHTML = sliderSkeletonMarkup();
   document.getElementById('top-airing-carousel').innerHTML = sliderSkeletonMarkup();
   document.getElementById('top-airing-grid').innerHTML = gridSkeletonMarkup(50);
   document.getElementById('top-anime-carousel').innerHTML = sliderSkeletonMarkup();
@@ -743,7 +742,6 @@ async function loadHome() {
     state.topAnimePage = 2;
     state.topAnimeHasNext = data.popular.pageInfo.hasNextPage;
     state.topAnimeLoading = false;
-    renderFeatured();
     renderTopAiringCarousel();
     renderAnimeGrid('top-airing-grid', data.airing.media);
     renderTopAnime();
