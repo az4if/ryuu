@@ -29,7 +29,7 @@ async function saveHoverAniListStatus(status) {
   const animeId = Number(popup?.dataset.anchorId);
   if (!animeId) return;
   try {
-    await anilist('mutation SaveStatus($mediaId: Int, $status: MediaListStatus) { SaveMediaListEntry(mediaId: $mediaId, status: $status) { id status progress } }', { mediaId: animeId, status });
+    await anilist('mutation SaveStatus($mediaId: Int, $status: MediaListStatus) { SaveMediaListEntry(mediaId: $mediaId, status: $status) { id status progress repeat } }', { mediaId: animeId, status });
     const anime = state.cardData.get(animeId);
     if (anime) anime.mediaListEntry = { ...(anime.mediaListEntry || {}), status };
     popup?.querySelector('.hover-anilist-label').replaceChildren(document.createTextNode(status[0] + status.slice(1).toLowerCase()));
@@ -188,7 +188,7 @@ async function openAnime(id) {
   state.currentAnime = null;
   showRoute('detail');
   document.getElementById('detail-content').innerHTML = detailSkeletonMarkup();
-  const query = `query Detail($id: Int) { Media(id: $id, type: ANIME) { id idMal title { romaji english native userPreferred } coverImage { extraLarge large medium color } bannerImage description(asHtml: false) episodes duration format status season seasonYear averageScore popularity genres source countryOfOrigin synonyms startDate { year month day } endDate { year month day } trailer { id site thumbnail } nextAiringEpisode { episode airingAt } airingSchedule(notYetAired: false, perPage: 50) { nodes { episode airingAt } } streamingEpisodes { title thumbnail url site } mediaListEntry { id status progress score(format: POINT_10) } studios(isMain: true) { nodes { name } } relations { edges { relationType(version: 2) node { id type format status episodes seasonYear title { userPreferred } coverImage { medium } } } } } }`;
+  const query = `query Detail($id: Int) { Media(id: $id, type: ANIME) { id idMal title { romaji english native userPreferred } coverImage { extraLarge large medium color } bannerImage description(asHtml: false) episodes duration format status season seasonYear averageScore popularity genres source countryOfOrigin synonyms startDate { year month day } endDate { year month day } trailer { id site thumbnail } nextAiringEpisode { episode airingAt } airingSchedule(notYetAired: false, perPage: 50) { nodes { episode airingAt } } streamingEpisodes { title thumbnail url site } mediaListEntry { id status progress repeat score(format: POINT_10) } studios(isMain: true) { nodes { name } } relations { edges { relationType(version: 2) node { id type format status episodes seasonYear title { userPreferred } coverImage { medium } } } } } }`;
   try {
     state.currentAnime = (await anilist(query, { id })).Media;
     state.currentEpisode = 1;
@@ -276,7 +276,7 @@ function bindDetailAniListProgress() {
 
 async function saveDetailAniListStatus(status) {
   try {
-    const data = await anilist('mutation SaveStatus($mediaId: Int, $status: MediaListStatus) { SaveMediaListEntry(mediaId: $mediaId, status: $status) { id status progress } }', { mediaId: state.currentAnime.id, status });
+    const data = await anilist('mutation SaveStatus($mediaId: Int, $status: MediaListStatus) { SaveMediaListEntry(mediaId: $mediaId, status: $status) { id status progress repeat } }', { mediaId: state.currentAnime.id, status });
     state.currentAnime.mediaListEntry = data.SaveMediaListEntry;
     renderDetail();
     toast('AniList updated.');
@@ -287,8 +287,13 @@ async function saveDetailAniListProgress(progress) {
   const total = Number(state.currentAnime.episodes);
   const numericProgress = Number.isFinite(progress) ? Math.floor(progress) : 0;
   const nextProgress = Math.max(0, total ? Math.min(numericProgress, total) : numericProgress);
+  const currentEntry = state.currentAnime.mediaListEntry || {};
+  const restartingCompleted = currentEntry.status === 'COMPLETED' && nextProgress > 0 && nextProgress < total;
+  const continuingRepeat = currentEntry.status === 'REPEATING' && nextProgress > 0;
+  const nextStatus = total && nextProgress >= total ? 'COMPLETED' : restartingCompleted ? 'REPEATING' : continuingRepeat ? 'REPEATING' : nextProgress > 0 ? 'CURRENT' : currentEntry.status || 'PLANNING';
+  const nextRepeat = restartingCompleted ? (Number(currentEntry.repeat) || 0) + 1 : Number(currentEntry.repeat) || 0;
   try {
-    const data = await anilist('mutation SaveProgress($mediaId: Int, $progress: Int) { SaveMediaListEntry(mediaId: $mediaId, progress: $progress, status: CURRENT) { id status progress } }', { mediaId: state.currentAnime.id, progress: nextProgress });
+    const data = await anilist('mutation SaveProgress($mediaId: Int, $progress: Int, $status: MediaListStatus, $repeat: Int) { SaveMediaListEntry(mediaId: $mediaId, progress: $progress, status: $status, repeat: $repeat) { id status progress repeat } }', { mediaId: state.currentAnime.id, progress: nextProgress, status: nextStatus, repeat: nextRepeat });
     state.currentAnime.mediaListEntry = data.SaveMediaListEntry;
     renderDetail();
     toast(`AniList updated to episode ${nextProgress}.`);
@@ -351,7 +356,13 @@ async function markEpisodeWatched(episode) {
   const button = document.getElementById('mark-watched');
   if (button) { button.disabled = true; button.textContent = 'Saving…'; }
   try {
-    const data = await anilist(`mutation SaveProgress($mediaId: Int, $progress: Int) { SaveMediaListEntry(mediaId: $mediaId, progress: $progress, status: CURRENT) { id progress status } }`, { mediaId: state.currentAnime.id, progress: episode });
+    const currentEntry = state.currentAnime.mediaListEntry || {};
+    const total = Number(state.currentAnime.episodes);
+    const restartingCompleted = currentEntry.status === 'COMPLETED' && episode > 0 && episode < total;
+    const continuingRepeat = currentEntry.status === 'REPEATING' && episode > 0;
+    const status = total && episode >= total ? 'COMPLETED' : restartingCompleted ? 'REPEATING' : continuingRepeat ? 'REPEATING' : episode > 0 ? 'CURRENT' : currentEntry.status || 'PLANNING';
+    const repeat = restartingCompleted ? (Number(currentEntry.repeat) || 0) + 1 : Number(currentEntry.repeat) || 0;
+    const data = await anilist(`mutation SaveProgress($mediaId: Int, $progress: Int, $status: MediaListStatus, $repeat: Int) { SaveMediaListEntry(mediaId: $mediaId, progress: $progress, status: $status, repeat: $repeat) { id progress status repeat } }`, { mediaId: state.currentAnime.id, progress: episode, status, repeat });
     state.currentAnime.mediaListEntry = data.SaveMediaListEntry;
     toast(`AniList updated to episode ${episode}.`);
     renderWatchPage();
@@ -362,6 +373,9 @@ async function markEpisodeWatched(episode) {
 }
 
 function showRoute(route) {
+  if (state.route === 'watch' && route !== 'watch') {
+    document.getElementById('watch-content')?.replaceChildren();
+  }
   hideHoverCard();
   document.querySelectorAll('.view').forEach(view => view.classList.toggle('is-active', view.id === `${route}-view`));
   state.route = route;
