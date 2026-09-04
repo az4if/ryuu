@@ -1,7 +1,3 @@
-# ryuu 龍
-
-A premium anime browsing/streaming front-end, built as a static site (plain HTML/CSS/JS, no build step) pulling trending data from AniList.
-
 <p align="center">
 	<img src="assets/readme_logo.png" alt="ryuu. logo" width="900">
 </p>
