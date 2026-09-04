@@ -2,26 +2,83 @@
 
 A premium anime browsing/streaming front-end, built as a static site (plain HTML/CSS/JS, no build step) pulling trending data from AniList.
 
-## Deploying to GitHub Pages
+<p align="center">
+	<img src="assets/readme_logo.png" alt="ryuu. logo" width="900">
+</p>
 
-This repo includes a GitHub Actions workflow (`.github/workflows/deploy.yml`) that deploys automatically on every push to `main`.
+<h1 align="center">ryuu.</h1>
 
-1. Push this repo to GitHub.
-2. Go to **Settings → Pages**.
-3. Under **Build and deployment → Source**, choose **GitHub Actions**.
-4. Push to `main` (or run the workflow manually from the **Actions** tab) — the site will build and publish at `https://<username>.github.io/<repo-name>/`.
+<p align="center">
+	A clean anime discovery and streaming front-end powered by AniList.
+</p>
 
-All asset paths in the project are relative, so the site works correctly whether it's hosted at a domain root or under a Pages project subpath. A `.nojekyll` file is included so Pages serves the files as-is instead of running them through Jekyll.
+<p align="center">
+	<a href="https://github.com/az4if/ryuu.">Repository</a>
+	·
+	<a href="https://graphql.anilist.co">AniList API</a>
+</p>
 
-## PWA support
+## What is Ryuu?
 
-The site is a fully installable Progressive Web App:
+Ryuu is a lightweight anime browser built with plain HTML, CSS, and JavaScript. It has no build step and works as a static site.
 
-- `site.webmanifest` — app name, theme colors, and icon set (192px/512px, including maskable variants).
-- `sw.js` — a service worker that caches the app shell (HTML/CSS/JS/icons) for fast repeat loads and basic offline tolerance. Live data (AniList API) and the video player are network-only and are never cached.
-- An **Install App** button appears in the header automatically once the browser determines the app is installable (via the `beforeinstallprompt` event).
-- Full favicon/touch-icon/tile coverage lives in `favicons/` and is linked from `index.html` for browsers, iOS home-screen icons, Android/Chrome, and Windows tiles (`browserconfig.xml`).
+## Features
 
-### Notes
-- Bump `CACHE_VERSION` at the top of `sw.js` whenever you change `index.html`, `style.css`, or `app.js`, so returning visitors get the update instead of a stale cached copy.
-- Since GitHub Pages serves over HTTPS, service workers and installability work out of the box with no extra configuration.
+- Browse trending, seasonal, popular, and airing anime.
+- Search the AniList catalog.
+- View title details, trailers, episodes, and streaming sources.
+- Track anime status and episode progress with AniList.
+- Install it as a Progressive Web App.
+- Cache the app shell for fast repeat loads and basic offline support.
+- Responsive layout for desktop and mobile.
+
+## Run locally
+
+Because Ryuu uses browser APIs and a service worker, serve it over a local HTTP server instead of opening `index.html` directly.
+
+```bash
+python -m http.server 8000
+```
+
+Open <http://localhost:8000> in your browser.
+
+## Deploy to GitHub Pages
+
+1. Push the repository to GitHub.
+2. Open **Settings → Pages**.
+3. Set **Source** to **GitHub Actions**.
+4. Push to `main`, or run the deployment workflow from the **Actions** tab.
+
+The site uses relative asset paths, so it works at both a domain root and a GitHub Pages project path. The included `.nojekyll` file keeps GitHub Pages from processing the site with Jekyll.
+
+## Configuration
+
+- `key.js` contains the public AniList client configuration. Do not add a client secret to this file.
+- `site-picks.js` controls the anime shown in the Site Picks slideshow.
+- `sw.js` contains the app-shell cache. Bump `CACHE_VERSION` whenever a cached HTML, CSS, JavaScript, or icon file changes.
+
+## Project structure
+
+```text
+index.html          App shell
+app.js              Core application logic
+overrides.js        UI enhancements and playback integrations
+style.css           Base styles
+enhancements.css    Additional responsive styling
+site-picks.js       Site Picks configuration
+sw.js               Service worker and offline cache
+assets/             Logos and artwork
+favicons/           Browser and device icons
+```
+
+## Notes
+
+AniList supplies the anime metadata. Video providers and live API data require an internet connection. AniList OAuth is optional and is only needed for account-based progress tracking.
+
+## License
+
+See [LICENSE](LICENSE) for the project license.
+
+## Inspiration
+
+Ryuu is inspired by [Zenshin](https://github.com/hitarth-gg/zenshin), a web and Electron-based anime streaming app by [hitarth-gg](https://github.com/hitarth-gg). This project builds on that inspiration with its own interface, styling, and implementation.

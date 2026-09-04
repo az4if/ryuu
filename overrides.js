@@ -706,33 +706,70 @@ function renderTopAnime() {
   loader.hidden = !state.topAnimeLoading;
 }
 
+// --- Infinite-scroll detection --------------------------------------------
+// Shared IntersectionObserver wiring for every "load more" sentinel in the
+// app. An observer is more accurate than reacting to scroll/wheel events
+// with position math: it fires exactly once the sentinel crosses the load
+// zone, keeps working during fast flings/momentum scrolling (it doesn't
+// depend on scroll-event sampling), and automatically re-checks itself
+// whenever layout changes (new items inserted, hover cards, etc.).
+//
+// rootMargin scales with the viewport height instead of a fixed pixel value
+// so the preload distance stays proportionally accurate on small phones and
+// large monitors alike: a fixed 480px is a huge head start on a 700px-tall
+// phone viewport but barely a heads-up on a 1440px monitor. Observers are
+// rebuilt with a fresh margin (debounced) on resize/orientation change so
+// rotating a device or resizing the window doesn't leave a stale margin.
+function infiniteScrollMargin() {
+  return `${Math.max(480, Math.round(window.innerHeight * 0.9))}px 0px`;
+}
+
+function createInfiniteScrollObserver(sentinelId, onIntersect) {
+  const sentinel = document.getElementById(sentinelId);
+  if (!sentinel || !('IntersectionObserver' in window)) return null;
+  const observer = new IntersectionObserver(entries => {
+    if (entries.some(entry => entry.isIntersecting)) onIntersect();
+  }, { root: null, rootMargin: infiniteScrollMargin(), threshold: 0 });
+  observer.observe(sentinel);
+  return observer;
+}
+
+let scrollObserverResizeTimer = null;
+window.addEventListener('resize', () => {
+  clearTimeout(scrollObserverResizeTimer);
+  scrollObserverResizeTimer = setTimeout(() => {
+    if (state.topAnimeObserver) setupTopAnimeLazyLoad();
+    if (state.browseObserver) setupAnilistBrowseLazyLoad();
+  }, 220);
+});
+
 function setupTopAnimeLazyLoad() {
   state.topAnimeObserver?.disconnect();
-  const sentinel = document.getElementById('top-anime-load-sentinel');
-  if (!sentinel || !('IntersectionObserver' in window)) return;
-  state.topAnimeObserver = new IntersectionObserver(entries => {
-    if (entries.some(entry => entry.isIntersecting)) loadMoreTopAnime();
-  }, { rootMargin: '480px 0px' });
-  state.topAnimeObserver.observe(sentinel);
+  state.topAnimeObserver = createInfiniteScrollObserver('top-anime-load-sentinel', loadMoreTopAnime);
 }
 
 async function loadMoreTopAnime() {
   if (state.topAnimeLoading || !state.topAnimeHasNext) return;
+  const requestId = state.topAnimeRequestId;
   state.topAnimeLoading = true;
   document.getElementById('top-anime-load-sentinel').hidden = false;
   document.getElementById('popular-grid').insertAdjacentHTML('beforeend', gridSkeletonMarkup(24));
   const query = `query TopAnime($page: Int) { Page(page: $page, perPage: 24) { pageInfo { hasNextPage } media(type: ANIME, sort: POPULARITY_DESC, isAdult: false) { id idMal title { romaji english native } coverImage { extraLarge large medium color } bannerImage description(asHtml: false) episodes format status season seasonYear averageScore popularity genres startDate { year month day } trailer { id site thumbnail } nextAiringEpisode { episode airingAt } } } }`;
   try {
     const data = await anilist(query, { page: state.topAnimePage });
+    if (requestId !== state.topAnimeRequestId) return; // a newer loadHome() superseded this fetch
     state.topAnime.push(...data.Page.media);
     state.topAnimePage += 1;
     state.topAnimeHasNext = data.Page.pageInfo.hasNextPage;
     renderTopAnime();
   } catch (error) {
+    if (requestId !== state.topAnimeRequestId) return;
     toast(`Could not load more top anime: ${error.message}`, true);
   } finally {
-    state.topAnimeLoading = false;
-    document.getElementById('top-anime-load-sentinel').hidden = true;
+    if (requestId === state.topAnimeRequestId) {
+      state.topAnimeLoading = false;
+      document.getElementById('top-anime-load-sentinel').hidden = true;
+    }
   }
 }
 
@@ -755,6 +792,7 @@ async function loadHome() {
     state.topAnimePage = 2;
     state.topAnimeHasNext = data.popular.pageInfo.hasNextPage;
     state.topAnimeLoading = false;
+    state.topAnimeRequestId = (state.topAnimeRequestId || 0) + 1;
     renderTopAiringCarousel();
     startTopAiringAutoplay();
     renderAnimeGrid('top-airing-grid', data.airing.media);
@@ -880,12 +918,7 @@ function updateAnilistBrowseAuthUI() {
 
 function setupAnilistBrowseLazyLoad() {
   state.browseObserver?.disconnect();
-  const sentinel = document.getElementById('anilist-load-sentinel');
-  if (!sentinel || !('IntersectionObserver' in window)) return;
-  state.browseObserver = new IntersectionObserver(entries => {
-    if (entries.some(entry => entry.isIntersecting)) runAnilistBrowse(false);
-  }, { rootMargin: '480px 0px' });
-  state.browseObserver.observe(sentinel);
+  state.browseObserver = createInfiniteScrollObserver('anilist-load-sentinel', () => runAnilistBrowse(false));
 }
 
 async function runAnilistBrowse(reset = false) {
