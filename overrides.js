@@ -637,7 +637,7 @@ function sliderContent(anime) {
   const backdrop = anime.bannerImage || coverOf(anime);
   const romaji = anime.title.romaji || titleOf(anime);
   const english = anime.title.english || anime.title.native || '';
-  const stats = `<div class="anime-stats"><span>${anime.episodes || '?'} EPS</span>${anime.averageScore ? `<span>${statIcon('star')} ${anime.averageScore}</span>` : ''}<span>${statIcon('user-round')} ${Number(anime.popularity || 0).toLocaleString()}</span><span>${statIcon('tv')} ${escapeHTML((anime.format || 'ANIME').slice(0, 3))}</span></div>`;
+  const stats = `<div class="anime-stats"><span>${anime.episodes || '?'} EPS</span>${anime.averageScore ? `<span>${statIcon('star')} ${anime.averageScore}/100</span>` : ''}<span>${statIcon('user-round')} ${Number(anime.popularity || 0).toLocaleString()}</span><span>${statIcon('tv')} ${escapeHTML((anime.format || 'ANIME').slice(0, 3))}</span></div>`;
   return `<img class="feature-glow" src="${escapeAttribute(backdrop)}" alt=""><article class="feature feature-enter" data-anime-id="${anime.id}" role="button" tabindex="0"><img class="feature-backdrop" src="${escapeAttribute(backdrop)}" alt=""><div class="feature-info"><h2>${escapeHTML(romaji)}</h2><p class="feature-native">${escapeHTML(english)}</p><p class="feature-desc">${escapeHTML(trimText(anime.description, 360) || 'No synopsis available.')}</p>${stats}</div></article>`;
 }
 
