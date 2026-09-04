@@ -45,7 +45,7 @@ function enhanceHoverActions(popup) {
   const currentStatus = anime?.mediaListEntry?.status || '';
   const statusLabel = currentStatus ? currentStatus[0] + currentStatus.slice(1).toLowerCase() : 'Add to AniList';
   const trailer = anime?.trailer?.site === 'youtube' ? `https://www.youtube.com/watch?v=${encodeURIComponent(anime.trailer.id)}` : '';
-  oldButton.outerHTML = `<div class="hover-actions"><div class="hover-anilist-wrap"><button class="hover-action-button hover-anilist" type="button">${HOVER_ANILIST_ICON}<span class="hover-anilist-label">${statusLabel}</span><span class="hover-action-chevron">${HOVER_CHEVRON_UP}</span></button><div class="hover-status-menu" hidden>${HOVER_ANILIST_STATUSES.map(([value, label]) => `<button type="button" data-hover-status="${value}">${label}</button>`).join('')}</div></div>${trailer ? `<button class="hover-action-button hover-trailer" type="button"><span>Trailer</span>${HOVER_YOUTUBE_ICON}</button>` : ''}</div>`;
+  oldButton.outerHTML = `<div class="hover-actions"><div class="hover-anilist-wrap"><button class="hover-action-button hover-anilist" type="button">${HOVER_ANILIST_ICON}<span class="hover-anilist-label">${statusLabel}</span><span class="hover-action-chevron">${HOVER_CHEVRON_UP}</span></button><div class="hover-status-menu" hidden>${HOVER_ANILIST_STATUSES.map(([value, label]) => `<button type="button" data-hover-status="${value}">${label}</button>`).join('')}</div></div>${trailer ? `<button class="hover-action-button hover-trailer" type="button">${HOVER_YOUTUBE_ICON}<span>Trailer</span></button>` : ''}</div>`;
   popup.querySelector('.hover-trailer')?.addEventListener('click', event => { event.stopPropagation(); window.open(trailer, '_blank', 'noopener'); });
 }
 
