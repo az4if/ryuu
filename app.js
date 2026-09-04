@@ -232,3 +232,127 @@ function stopSitePickAutoplay() {
     state.sitePicksTimer = null;
   }
 }
+
+// ============================================================
+//  RYUU · CONTINUE WATCHING
+//  Queries the logged-in AniList user's CURRENT media list
+//  and renders landscape cards on the home page.
+//  Only visible when authenticated.
+// ============================================================
+
+// ── Hook: re-run whenever auth state changes ──────────────────
+;(function () {
+  const _orig = updateAnilistUI;
+  updateAnilistUI = function () {
+    _orig.apply(this, arguments);
+    loadContinueWatching();
+  };
+}());
+
+// ── Hook: re-run when navigating back to home ────────────────
+;(function () {
+  const homeView = document.getElementById('home-view');
+  if (!homeView) return;
+  new MutationObserver(() => {
+    if (homeView.classList.contains('is-active')) loadContinueWatching();
+  }).observe(homeView, { attributeFilter: ['class'] });
+}());
+
+// ── Load & fetch ─────────────────────────────────────────────
+async function loadContinueWatching() {
+  const section = document.getElementById('continue-watching-section');
+  if (!section) return;
+
+  // Not logged in — hide and bail
+  if (!state.auth.token || !state.auth.viewer?.id) {
+    section.hidden = true;
+    return;
+  }
+
+  // Show skeleton while fetching
+  section.hidden = false;
+  document.getElementById('continue-watching-grid').innerHTML = cwSkeletons(4);
+
+  const query = `
+    query CW($userId: Int) {
+      MediaListCollection(
+        userId: $userId, type: ANIME,
+        status: CURRENT, sort: UPDATED_TIME_DESC
+      ) {
+        lists { entries {
+          progress
+          media {
+            id title { romaji english native }
+            coverImage { extraLarge large color }
+            bannerImage episodes format status
+            nextAiringEpisode { episode airingAt }
+          }
+        }}
+      }
+    }
+  `;
+
+  try {
+    const data = await anilist(query, { userId: state.auth.viewer.id });
+    const entries = (data.MediaListCollection?.lists ?? [])
+      .flatMap(l => l.entries ?? [])
+      .slice(0, 12);
+
+    if (!entries.length) { section.hidden = true; return; }
+
+    entries.forEach(e => state.cardData.set(e.media.id, e.media));
+
+    const grid = document.getElementById('continue-watching-grid');
+    grid.innerHTML = entries.map(cwCardHTML).join('');
+
+    grid.querySelectorAll('.cw-card[data-anime-id]').forEach(card => {
+      const id = Number(card.dataset.animeId);
+      card.addEventListener('click', () => openAnime(id));
+      card.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openAnime(id); }
+      });
+    });
+  } catch {
+    section.hidden = true;
+  }
+}
+
+// ── Card markup ───────────────────────────────────────────────
+function cwCardHTML({ progress, media }) {
+  const title   = titleOf(media);
+  const cover   = coverOf(media);
+  const banner  = media.bannerImage || cover;
+  const total   = media.episodes || '?';
+  const pct     = media.episodes ? Math.min(100, Math.round((progress / media.episodes) * 100)) : 0;
+  const next    = media.nextAiringEpisode;
+  const nextTxt = next
+    ? `Next EP ${next.episode} ${relativeAiring(next.airingAt)}`
+    : (media.status === 'FINISHED' ? 'Finished' : '');
+
+  return `<article class="cw-card" data-anime-id="${media.id}" role="button" tabindex="0" aria-label="${escapeAttribute(title)}">
+  <img class="cw-cover" src="${escapeAttribute(cover)}" alt="" loading="lazy">
+  <div class="cw-body">
+    <img class="cw-banner" src="${escapeAttribute(banner)}" alt="" loading="lazy">
+    <div class="cw-info">
+      <p class="cw-eyebrow">CONTINUE WATCHING</p>
+      <h3 class="cw-title">${escapeHTML(title)}</h3>
+      <p class="cw-native">${escapeHTML(media.title.native || media.title.english || '')}</p>
+      <div class="cw-foot">
+        <div class="cw-bar-wrap">
+          <div class="cw-bar"><div class="cw-fill" style="width:${pct}%"></div></div>
+        </div>
+        <p class="cw-meta">EP&nbsp;${progress}&nbsp;/&nbsp;${total}${nextTxt ? '&ensp;·&ensp;' + escapeHTML(nextTxt) : ''}</p>
+      </div>
+    </div>
+  </div>
+</article>`;
+}
+
+function cwSkeletons(n) {
+  return Array.from({ length: n }, () =>
+    `<div class="cw-card cw-skeleton">
+       <div class="cw-cover loading-block"></div>
+       <div class="cw-body loading-block"></div>
+     </div>`
+  ).join('');
+}

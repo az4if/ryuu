@@ -512,3 +512,168 @@ button.episode-row:hover { transform: translateX(2px); }
     pointer-events: auto;
   }
 }
+
+/* ============================================================
+   CONTINUE WATCHING
+   Landscape cards: cover portrait on left, info + blurred
+   banner on right. Mirrors Zenshin's CurrentlyWatchingCard
+   adapted to Ryuu's monospace dark aesthetic.
+   Only rendered when the user is logged in to AniList.
+   ============================================================ */
+
+/* Section — same gutter system as every other content section */
+.cw-section { width: 100%; }
+.cw-section > .section-heading,
+.cw-section > .cw-grid {
+  width: calc(100% - var(--page-gutter) * 2);
+  margin-right: auto;
+  margin-left: auto;
+}
+
+/* Grid — fills available space, 1-3 columns depending on room */
+.cw-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: clamp(8px, 1.5vw, 14px);
+}
+
+/* ── Card shell (14:5 aspect matches Zenshin) ── */
+.cw-card {
+  position: relative;
+  display: flex;
+  aspect-ratio: 14 / 5;
+  overflow: hidden;
+  border: 1px solid #414149;
+  background: #141416;
+  cursor: pointer;
+  transition: border-color .2s ease, transform .22s ease, box-shadow .22s ease;
+}
+.cw-card:hover {
+  border-color: #a89fff;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 28px #0007;
+}
+.cw-card:focus-visible { outline: 2px solid #a89fff; outline-offset: 3px; }
+
+/* ── Cover (portrait, left column) ── */
+.cw-cover {
+  flex-shrink: 0;
+  /* match Zenshin's max-w-44 = 176px, but fluid */
+  width: clamp(64px, 26%, 140px);
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+/* ── Right body (banner + info overlay) ── */
+.cw-body {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Banner — heavily dimmed like Zenshin's brightness-[0.2] */
+.cw-banner {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  filter: brightness(.18) blur(2px);
+  transform: scale(1.06);
+}
+
+/* Info overlay */
+.cw-info {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  padding: clamp(8px, 2vw, 16px) clamp(10px, 2.5vw, 20px);
+  gap: 1px;
+}
+
+/* Eyebrow label */
+.cw-eyebrow {
+  font: .52rem/1 var(--mono);
+  letter-spacing: .14em;
+  color: #a89fff;
+  margin-bottom: 3px;
+}
+
+/* Title */
+.cw-title {
+  font: 600 clamp(.72rem, 1.1vw, .92rem)/1.3 var(--mono);
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Native / english subtitle */
+.cw-native {
+  font: .58rem/1 var(--mono);
+  color: #d3d1d680;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Footer: progress bar + meta line */
+.cw-foot {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: auto;
+  padding-top: 6px;
+  border-top: 1px solid #ffffff14;
+}
+
+/* Progress bar */
+.cw-bar-wrap { width: 100%; }
+.cw-bar {
+  width: 100%;
+  height: 2px;
+  background: #414149;
+  overflow: hidden;
+}
+.cw-fill {
+  height: 100%;
+  background: #a89fff;
+  min-width: 3px;
+  transition: width .4s ease;
+}
+
+/* Episode / airing meta */
+.cw-meta {
+  font: .57rem/1 var(--mono);
+  color: #d3d1d6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: .02em;
+}
+
+/* ── Skeleton state ── */
+.cw-skeleton { pointer-events: none; border-color: #2a2a2e; }
+.cw-skeleton .cw-cover {
+  width: clamp(64px, 26%, 140px);
+  flex-shrink: 0;
+  background: #2a2a2e;
+}
+.cw-skeleton .cw-body { background: #1e1e22; }
+/* Override loading-block bg so shimmer is visible */
+.cw-skeleton .cw-cover.loading-block,
+.cw-skeleton .cw-body.loading-block { background: #1e1e22; }
+
+/* ── Mobile (narrow) ── */
+@media (max-width: 620px) {
+  .cw-section > .section-heading,
+  .cw-section > .cw-grid { width: calc(100% - 32px); }
+  .cw-grid { grid-template-columns: 1fr; }
+  .cw-card { aspect-ratio: 5 / 2; }
+}
