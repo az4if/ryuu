@@ -18,7 +18,7 @@ document.addEventListener('click', event => {
   if (animeId) openAnime(animeId);
 });
 
-const HOVER_ANILIST_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#02a9ff" d="M24 17.53v2.421c0 .71-.391 1.101-1.1 1.101h-5l-.057-.165L11.84 3.736c.106-.502.46-.788 1.053-.788h2.422c.71 0 1.1.391 1.1 1.1v12.38H22.9c.71 0 1.1.392 1.1 1.101zM11.034 2.947l6.337 18.104h-4.918l-1.052-3.131H6.019l-1.077 3.131H0L6.361 2.948h4.673zm-.66 10.96l-1.69-5.014-1.541 5.015h3.23z"/></svg>';
+const HOVER_ANILIST_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20L8.5 4h2L16 20"/><path d="M6 13h7"/><path d="M16 4v16h7"/></svg>';
 const HOVER_YOUTUBE_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect width="20" height="15" x="2" y="4.5" rx="4"/><polygon points="10 9 15 12 10 15 10 9"/></svg>';
 const HOVER_CHEVRON_UP = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m18 15-6-6-6 6"/></svg>';
 const HOVER_ANILIST_STATUSES = [['PLANNING', 'Planning'], ['CURRENT', 'Current'], ['PAUSED', 'Paused'], ['COMPLETED', 'Completed'], ['DROPPED', 'Dropped'], ['REPEATING', 'Repeating']];

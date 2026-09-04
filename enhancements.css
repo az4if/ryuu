@@ -74,6 +74,7 @@
 .hover-action-button { display: flex; width: 100%; min-height: 32px; align-items: center; gap: 6px; border: 1px solid #59525d; padding: 5px 7px; background: #28262d; color: #eeeafd; font: .59rem/1 var(--mono); text-align: left; }
 .hover-action-button:hover { border-color: var(--accent); background: #39334e; }
 .hover-action-button svg { width: 16px; height: 16px; flex: none; fill: currentColor; stroke: none; }
+.hover-anilist svg { fill: none; stroke: #fff; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2; }
 .hover-action-chevron svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2; }
 .hover-trailer svg { fill: none; stroke: #fff; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2; }
 .hover-anilist-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
